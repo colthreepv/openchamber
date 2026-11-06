@@ -50,6 +50,17 @@ describe('assistant memory scope', () => {
 });
 
 describe('assistant memory actions with SQLite', () => {
+  it('scopes node zoom to the resolved canonical and reuses raw exchange zoom for leaves', async () => {
+    const { messageSearch } = setup();
+    const zoom = vi.fn(async (_session, id) => id === 'mem:1:0'
+      ? { children: [{ id: 'mem:0:0' }, { id: 'mem:0:1' }] }
+      : { messageId: 'u1' });
+    const actions = createAssistantMemoryActions({ getClient: async () => ({ session: { list: async () => ({ data: sessions }) } }),
+      messageSearch, memoryTree: { zoom }, readSettings: async () => ({ messageSearchEnabled: true }) });
+    expect((await actions.execute('memory.zoom', { nodeId: 'mem:1:0', sessionId: 'other' }, 'work')).children).toHaveLength(2);
+    expect(zoom).toHaveBeenCalledWith('a', 'mem:1:0');
+    expect((await actions.execute('memory.zoom', { nodeId: 'mem:0:0', sessionId: 'other' }, 'work')).messages.map((m) => m.id)).toEqual(['u1', 'r1', 'r2']);
+  });
   it('recalls only scoped sessions, newest first, with inclusive date bounds and readable matches', async () => {
     const { actions } = setup();
     const result = await actions.execute('memory.recall', { query: 'postgres', since: 11, until: 15 }, 'work');

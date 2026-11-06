@@ -14,6 +14,7 @@ import { createProjectIdFromPath } from '../projects/project-id.js';
 import { OPENCHAMBER_AGENT_TOOL_ACTION_DEFINITIONS, OPENCHAMBER_CONTROL_ACTION_DEFINITIONS } from '../openchamber-control/actions.js';
 import { openMessageSearchStore, toMatchExpression, buildSnippet } from '../message-search/store.js';
 import { loadSqliteOpener } from '../message-search/sqlite.js';
+import { createAssistantMemoryRuntime } from '../assistant-memory/runtime.js';
 
 const temporaryDirectories = [];
 
@@ -66,6 +67,56 @@ const loadTools = async (dataDir, tag, hooks = {}, removed = []) => {
 };
 
 describe('agent tool action allowlist', () => {
+  it('supplies a canonical checkpoint through the generated hook and authenticated callback, and fails open', async () => {
+    const { dataDir, runtime: initial } = await createRuntime();
+    const settings = { messageSearchEnabled: true, agentMemoryToolEnabled: true };
+    const canonical = { id: 'canonical', location: { directory: '/assistant' }, model: { id: 'sonnet', providerID: 'anthropic' }, metadata: { assistant: { name: 'Ada', canonical: true } } };
+    const tree = createAssistantMemoryRuntime({ dataDir, readSettings: async () => settings, generate: vi.fn(), messageSearch: {
+      status: async () => ({ state: 'on' }),
+      memoryMessages: () => [{ id: 'u1', role: 'user', createdAt: 1, text: 'Remember postgres 17' }, { id: 'a1', role: 'assistant', createdAt: 2, text: 'Confirmed' }],
+    } });
+    const service = createOpenChamberControlService({
+      memoryTree: tree, createClient: () => ({ session: { get: async ({ sessionID }) => sessionID === 'canonical' ? canonical : { ...canonical, id: sessionID, metadata: {} } } }),
+      buildOpenCodeUrl: () => 'http://localhost:1', getOpenCodeAuthHeaders: () => ({}),
+    });
+    const runtime = createAgentToolRuntime({ crypto, fsPromises: fs, path, instanceDir: dataDir, getActivePort: () => 3901,
+      executeAction: initial.execute, memoryCheckpoint: (id, coverage) => service.memoryCheckpoint(id, coverage) });
+    const prepared = await prepareManagedEnv(runtime, { includeMemory: true });
+    const hooks = {};
+    await loadTools(dataDir, 'checkpoint', hooks);
+    const app = express(); runtime.registerRoutes(app, express);
+    const server = await new Promise((resolve) => { const listener = app.listen(0, 'localhost', () => resolve(listener)); });
+    const previous = { url: process.env.OPENCHAMBER_AGENT_TOOL_URL, token: process.env.OPENCHAMBER_AGENT_TOOL_TOKEN };
+    process.env.OPENCHAMBER_AGENT_TOOL_URL = `http://localhost:${server.address().port}/api/openchamber/agent-tool`;
+    process.env.OPENCHAMBER_AGENT_TOOL_TOKEN = prepared.OPENCHAMBER_AGENT_TOOL_TOKEN;
+    try {
+      const event = { sessionID: 'canonical', messages: [{ role: 'user', id: 'u1', content: [] }, { role: 'assistant', id: 'a1', content: [] }] };
+      await hooks.compaction(event);
+      expect(event.result.summary).toContain('Remember postgres 17');
+      expect(event.result.metadata).toBeUndefined(); // OpenCode owns keepID and its verbatim tail.
+      const busy = { sessionID: 'canonical', messages: [{ role: 'user', id: 'u2', content: [] }] };
+      await hooks.compaction(busy); expect(busy.result).toBeUndefined();
+      const toolTurn = { ...event, result: undefined, messages: [...event.messages, { role: 'assistant', id: 'a2', content: [{ type: 'tool-call' }] }] };
+      await hooks.compaction(toolTurn); expect(toolTurn.result).toBeUndefined();
+      const stale = { ...event, result: undefined, messages: [{ role: 'user', id: 'u1', content: [] }, { role: 'assistant', id: 'missing', content: [] }] };
+      await hooks.compaction(stale); expect(stale.result).toBeUndefined();
+      const unrelated = { ...event, result: undefined, sessionID: 'work' }; await hooks.compaction(unrelated);
+      expect(unrelated.result).toBeUndefined();
+      settings.assistantMemoryTreeEnabled = false;
+      const off = { ...event, result: undefined }; await hooks.compaction(off); expect(off.result).toBeUndefined();
+      process.env.OPENCHAMBER_AGENT_TOOL_TOKEN = 'wrong';
+      const refused = { ...event, result: undefined }; await hooks.compaction(refused); expect(refused.result).toBeUndefined();
+      process.env.OPENCHAMBER_AGENT_TOOL_URL = 'not a URL';
+      const failed = { ...event, result: undefined }; await hooks.compaction(failed); expect(failed.result).toBeUndefined();
+      await request(app).post('/api/openchamber/agent-tool/memory-checkpoint').send({ sessionID: 'canonical' }).expect(401);
+    } finally {
+      if (previous.url === undefined) delete process.env.OPENCHAMBER_AGENT_TOOL_URL; else process.env.OPENCHAMBER_AGENT_TOOL_URL = previous.url;
+      if (previous.token === undefined) delete process.env.OPENCHAMBER_AGENT_TOOL_TOKEN; else process.env.OPENCHAMBER_AGENT_TOOL_TOKEN = previous.token;
+      await new Promise((resolve) => server.close(resolve));
+      await tree.stop();
+    }
+  });
+
   it('runs the materialized recall and zoom tool through its authenticated HTTP callback and SQLite', async () => {
     const store = openMessageSearchStore(loadSqliteOpener()(':memory:'));
     store.upsertSession({ id: 'canonical', directory: '/assistant', title: 'Assistant' });
@@ -676,7 +727,7 @@ describe('managed agent tool runtime', () => {
 
     expect(Object.keys(tool)).toEqual(['openchamber', 'openchamber_memory']);
     expect(Object.keys(tool.openchamber_memory.input.properties.parameters.properties).sort())
-      .toEqual(['body', 'limit', 'memoryId', 'messageId', 'query', 'scope', 'sessionId', 'since', 'title', 'type', 'until']);
+      .toEqual(['body', 'limit', 'memoryId', 'messageId', 'nodeId', 'query', 'scope', 'sessionId', 'since', 'title', 'type', 'until']);
     // Memory inputs must not leak into the control tool's schema, which the
     // model pays for on every unrelated call.
     expect(Object.keys(tool.openchamber.input.properties.parameters.properties)).not.toContain('memoryId');

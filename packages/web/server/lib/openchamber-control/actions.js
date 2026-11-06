@@ -94,7 +94,7 @@ export const OPENCHAMBER_WEB_ACTIONS = Object.freeze(
  */
 export const OPENCHAMBER_MEMORY_ACTION_DEFINITIONS = Object.freeze([
   { action: 'memory.recall', title: 'Recall past conversations', description: 'Search this assistant and its work sessions; requires query. Newest mentions first' },
-  { action: 'memory.zoom', title: 'Read a recalled exchange', description: 'Requires messageId and sessionId from recall; returns the user turn and settled replies' },
+  { action: 'memory.zoom', title: 'Read conversation memory', description: 'nodeId opens checkpoint children or its exchange; otherwise messageId and sessionId from recall return the user turn and settled replies' },
   { action: 'memory.read', title: 'Read a stored memory', description: 'Full text of one memory; requires title or memoryId' },
   { action: 'memory.list', title: 'List stored memories', description: 'Titles, when the session index is missing, stale or cut short' },
   { action: 'memory.save', title: 'Remember something', description: 'Requires title, body, scope. Saving the same thing updates it; memoryId rewrites that entry, to correct one or merge several into it' },

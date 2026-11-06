@@ -393,6 +393,14 @@ Adding recall and zoom preserves that API and avoids a second tool with the
 same name or a second setting governing one tool. Conversation reads stay
 assistant-scoped independently of saved facts' project/global scope.
 
+Zoom also accepts `nodeId` from an assistant memory checkpoint. Node lookups
+always use the server-resolved canonical assistant ID, ignoring a supplied
+session ID. Internal nodes return 2 children; leaves reuse the existing
+bounded raw-exchange response. `memoryCheckpoint` resolves the session from
+OpenCode before calling the canonical-only tree service. The authenticated
+agent-tool callback owns fail-open handling. The tree's durable storage,
+model settings and budget contract live in `../assistant-memory/DOCUMENTATION.md`.
+
 ### Why a background message waits behind a page and does not end it
 
 A dispatched session's result, a pull request wake, a workflow report or a

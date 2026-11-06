@@ -195,6 +195,15 @@
     "agentMemoryToolEnabled": {
       "scope": "instance"
     },
+    "assistantMemoryTreeEnabled": {
+      "scope": "instance"
+    },
+    "assistantMemoryModel": {
+      "scope": "instance"
+    },
+    "assistantMemoryVariant": {
+      "scope": "instance"
+    },
     "agentKnowledgeToolEnabled": {
       "scope": "instance"
     },

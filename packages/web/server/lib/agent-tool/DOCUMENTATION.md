@@ -320,6 +320,20 @@ past the 2048-character cut.
 
 ## Security invariants
 
+The generated plugin also registers a `compaction` hook. It requests
+`POST /api/openchamber/agent-tool/memory-checkpoint` with the same child token
+and same-machine check. The service resolves the session itself; only a
+canonical assistant can receive a tree checkpoint. The hook sets only
+`event.result.summary`, preserving OpenCode's verbatim-tail policy. Disabled,
+empty, failed and timed-out requests leave `event.result` unset. Tree budgets,
+model settings and runtime availability are in
+`../assistant-memory/DOCUMENTATION.md`.
+
+The hook also leaves native compaction in charge for tool-bearing or
+unfinished current turns. It sends only the latest turn's user/reply IDs to
+the callback, where they must match the indexed final exchange. Historical
+tree memory cannot replace unindexed current working state.
+
 - The callback accepts same-machine requests only and requires the current
   per-child bearer token using a timing-safe comparison. Same-machine means a
   loopback source, or, for a listener bound to one concrete address, a source

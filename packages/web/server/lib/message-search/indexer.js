@@ -32,6 +32,8 @@ const sessionSchema = z.object({
   location: z.object({ directory: z.string() }).partial().nullish(),
   time: z.object({ created: z.number(), updated: z.number() }).partial().nullish(),
   revert: z.object({ messageID: z.string().nullish() }).nullish(),
+  metadata: z.unknown().optional(),
+  model: z.object({ providerID: z.string(), id: z.string() }).nullish(),
 });
 const sessionPageSchema = z.object({
   data: z.array(z.unknown()),
@@ -109,6 +111,7 @@ export const createMessageSearchIndexer = ({
   // Read per record, so switching it takes effect from the next one.
   includeReasoning = () => false,
   logger = console,
+  onSessionSynced = () => {},
 }) => {
   const liveTimers = new Map();
   const liveQueue = new Map();
@@ -220,6 +223,7 @@ export const createMessageSearchIndexer = ({
       }
     }
     store.markSynced(sessionId, session.time?.updated ?? null);
+    onSessionSynced(session);
   };
 
   const takeNext = () => {
@@ -306,7 +310,10 @@ export const createMessageSearchIndexer = ({
     for (const session of listed.values()) {
       const known = store.readSession(session.id);
       const updatedAt = session.time?.updated ?? null;
-      if (known && known.synced_updated_at !== null && updatedAt !== null && known.synced_updated_at >= updatedAt) continue;
+      if (known && known.synced_updated_at !== null && updatedAt !== null && known.synced_updated_at >= updatedAt) {
+        onSessionSynced(session);
+        continue;
+      }
       backfillQueue.set(session.id, session.location?.directory ?? '');
       queued += 1;
     }

@@ -106,6 +106,19 @@ describe.skipIf(!open)('message search index', () => {
     await indexer.idle();
   };
 
+  it('resumes tree scheduling for already-current sessions on reconnect without reading messages again', async () => {
+    const notified = [];
+    indexer = createMessageSearchIndexer({ store, createClient: () => fake.client, pageSize: 2, backfillPauseMs: 0,
+      onSessionSynced: (session) => notified.push(session.id), logger: { warn: () => {} } });
+    fake.session('a'); fake.user('a', 'u1', 'Remember path');
+    await backfill();
+    expect(notified).toEqual(['a']);
+    fake.calls.list.length = 0;
+    await backfill();
+    expect(notified).toEqual(['a', 'a']);
+    expect(fake.calls.list).toEqual([]);
+  });
+
   it('reports list and session read failures until a successful retry', async () => {
     fake.session('a');
     fake.user('a', 'u1', 'indexed eventually');

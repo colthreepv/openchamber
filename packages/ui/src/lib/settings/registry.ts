@@ -308,6 +308,9 @@ export const SETTINGS_REGISTRY = {
   agentSecretToolEnabled: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('agentSecretToolEnabled', (v) => useUIStore.getState().setAgentSecretToolEnabled(v)) }),
   agentToolsCodeMode: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('agentToolsCodeMode', (v) => useUIStore.getState().setAgentToolsCodeMode(v)) }),
   agentMemoryToolEnabled: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('agentMemoryToolEnabled', (v) => useUIStore.getState().setAgentMemoryToolEnabled(v)) }),
+  assistantMemoryTreeEnabled: field({ scope: 'instance', parse: parseBoolean }),
+  assistantMemoryModel: field({ scope: 'instance', parse: parseNonEmptyString }),
+  assistantMemoryVariant: field({ scope: 'instance', parse: parseNonEmptyString }),
   agentKnowledgeToolEnabled: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('agentKnowledgeToolEnabled', (v) => useUIStore.getState().setAgentKnowledgeToolEnabled(v)) }),
   agentWorkflowToolEnabled: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('agentWorkflowToolEnabled', (v) => useUIStore.getState().setAgentWorkflowToolEnabled(v)) }),
   // The isolated-spaces switch. The server reads it once at start; a change takes effect at the
