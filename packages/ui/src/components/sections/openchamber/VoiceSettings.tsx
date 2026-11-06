@@ -749,6 +749,8 @@ export const VoiceSettings: React.FC = () => {
     // STT settings
     const sttProvider = useConfigStore((state) => state.sttProvider);
     const setSttProvider = useConfigStore((state) => state.setSttProvider);
+    const sttStreaming = useConfigStore((state) => state.sttStreaming);
+    const setSttStreaming = useConfigStore((state) => state.setSttStreaming);
     const sttServerUrl = useConfigStore((state) => state.sttServerUrl);
     const setSttServerUrl = useConfigStore((state) => state.setSttServerUrl);
     const sttModel = useConfigStore((state) => state.sttModel);
@@ -1430,6 +1432,13 @@ export const VoiceSettings: React.FC = () => {
                                 >
                                     <VoiceApiKeyField kind="stt" />
                                 </SettingsStackedField>
+                                <SettingsCheckboxRow
+                                    settingsItem="voice.stt-streaming"
+                                    label={t('settings.voice.page.field.sttStreaming')}
+                                    info={t('settings.voice.page.field.sttStreamingHint')}
+                                    checked={sttStreaming}
+                                    onChange={setSttStreaming}
+                                />
                                 <SettingsStackedField label={t('settings.voice.page.field.model')}>
                                     <input
                                         type="text"

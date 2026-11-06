@@ -2202,6 +2202,8 @@ export const settingsDict = {
   'settings.voice.page.field.selectLanguagePlaceholder': 'اختر اللغة',
   'settings.voice.page.field.sttBrowserSupportError': 'MediaRecorder أو AudioContext غير متوفر في هذا المتصفح. قد لا يعمل تحويل الكلام إلى نص عبر الخادم.',
   'settings.voice.page.field.sttServerUrlHint': 'عنوان URL الأساسي لخادم متوافق مع Whisper',
+  "settings.voice.page.field.sttStreaming": "البث الفوري (OpenCodex)",
+  "settings.voice.page.field.sttStreamingHint": "يستخدم عنوان الخادم ومفتاح API. يُتجاهل النموذج والمسار. مدة الجلسة خمس دقائق كحد أقصى.",
   'settings.voice.page.field.sttLanguageHint': 'رمز BCP-47 (مثلًا en أو fr). اتركه فارغًا للاكتشاف التلقائي.',
   'settings.voice.page.field.correctTranscript': 'تصحيح الكلمات المسموعة خطأً',
   'settings.voice.page.field.correctTranscriptInfo': 'عند إيقاف الإملاء، يقرأ النموذج الصغير النص ويصحح الكلمات التي سمعها نموذج التعرف على الكلام خطأً. يُرسل النص المُملى إلى مزوّد النموذج الصغير ويظهر بعد ثانية أو ثانيتين.',

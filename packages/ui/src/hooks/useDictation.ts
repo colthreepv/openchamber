@@ -59,6 +59,7 @@ export const getDictationStartOptions = (): DictationStartOptions => {
             ...(language ? { language } : {}),
             ...correct,
             openaiCompatible: {
+                streaming: state.sttStreaming,
                 baseUrl: state.sttServerUrl,
                 model: state.sttModel,
                 endpointPath: state.sttEndpointPath || undefined,

@@ -487,6 +487,10 @@ export class DictationStreamManager {
    * the chunk when it holds a good place to cut.
    */
   forwardAudio(state, pcm16) {
+    if (state.stt.segments === false) {
+      this.appendToSegment(state, pcm16);
+      return;
+    }
     const cutAt = findSegmentCut(state, pcm16);
     if (cutAt === null) {
       this.appendToSegment(state, pcm16);
@@ -511,7 +515,7 @@ export class DictationStreamManager {
     const silent = state.peakSinceCommit < SILENCE_PEAK_THRESHOLD;
     state.bytesSinceCommit = 0;
     state.peakSinceCommit = 0;
-    if (silent) {
+    if (silent && state.stt.segments !== false) {
       state.stt.clear();
       return;
     }

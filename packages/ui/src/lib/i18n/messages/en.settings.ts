@@ -2226,6 +2226,8 @@ export const settingsDict = {
   'settings.voice.page.field.selectLanguagePlaceholder': 'Select language',
   'settings.voice.page.field.sttBrowserSupportError': 'MediaRecorder or AudioContext is not available in this browser. Server STT may not work.',
   'settings.voice.page.field.sttServerUrlHint': 'Base URL of the Whisper-compatible server',
+  "settings.voice.page.field.sttStreaming": "Real-time streaming (OpenCodex)",
+  "settings.voice.page.field.sttStreamingHint": "Uses the server URL and API key. Model and endpoint path are ignored. Sessions are limited to five minutes.",
   'settings.voice.page.field.sttLanguageHint': 'BCP-47 code (for example en, fr). Leave blank for auto-detect.',
   'settings.voice.page.field.correctTranscript': 'Fix misheard words',
   'settings.voice.page.field.correctTranscriptInfo': 'After you stop dictating, the Small Model reads the text and fixes words the speech model misheard. The dictated text goes to the Small Model\'s provider, and it appears a second or two later.',

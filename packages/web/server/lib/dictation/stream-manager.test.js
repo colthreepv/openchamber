@@ -100,6 +100,20 @@ function waitFor(predicate, timeoutMs = 1000) {
 }
 
 describe('DictationStreamManager', () => {
+  it('does not segment or clear continuous streaming audio', async () => {
+    const session = new FakeSttSession();
+    session.segments = false;
+    const { manager, messages } = createManager(session);
+    await manager.handleStart('continuous', FORMAT, {});
+    for (let seq = 0; seq < 30; seq += 1) {
+      manager.handleChunk({ dictationId: 'continuous', seq, audioBase64: silentChunkBase64(16000) });
+    }
+    expect(session.commits).toBe(0);
+    expect(session.clears).toBe(0);
+    manager.handleFinish('continuous', 29);
+    await waitFor(() => messages.some((m) => m.type === 'final'));
+    expect(session.commits).toBe(1);
+  });
   it('transcribes ordered chunks and emits final text', async () => {
     const session = new FakeSttSession();
     const { manager, messages } = createManager(session);

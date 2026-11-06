@@ -64,6 +64,7 @@ interface OpenChamberDefaults {
     dictationEnabled?: boolean;
     dictationAutoSend?: boolean;
     sttProvider?: 'local' | 'openai-compatible';
+    sttStreaming?: boolean;
     sttServerUrl?: string;
     sttEndpointPath?: string;
     sttModel?: string;
@@ -153,6 +154,7 @@ const toOpenChamberDefaults = (data: DesktopSettings): OpenChamberDefaults => {
         dictationEnabled: data.dictationEnabled,
         dictationAutoSend: data.dictationAutoSend,
         sttProvider: data.sttProvider,
+        sttStreaming: data.sttStreaming,
         sttServerUrl: data.sttServerUrl,
         sttEndpointPath: data.sttEndpointPath,
         sttModel: data.sttModel,
@@ -1620,6 +1622,7 @@ interface ConfigStore {
     dictationEnabled: boolean;
     dictationAutoSend: boolean;
     sttProvider: 'local' | 'openai-compatible';
+    sttStreaming: boolean;
     sttServerUrl: string;
     sttModel: string;
     /** Optional resource path for the OpenAI-compatible transcription endpoint. */
@@ -1659,6 +1662,7 @@ interface ConfigStore {
     setDictationEnabled: (enabled: boolean) => void;
     setDictationAutoSend: (enabled: boolean) => void;
     setSttProvider: (provider: 'local' | 'openai-compatible') => void;
+    setSttStreaming: (enabled: boolean) => void;
     setSttServerUrl: (url: string) => void;
     setSttModel: (model: string) => void;
     setSttEndpointPath: (path: string) => void;
@@ -2056,6 +2060,7 @@ export const useConfigStore = create<ConfigStore>()(
                     }
                     return 'local' as const;
                 })(),
+                sttStreaming: getSafeStorage().getItem('sttStreaming') === 'true',
                 sttServerUrl: (() => {
                     if (typeof window !== 'undefined') {
                         const saved = localStorage.getItem('sttServerUrl');
@@ -2957,6 +2962,7 @@ export const useConfigStore = create<ConfigStore>()(
                             dictationEnabled: typeof defaults.dictationEnabled === 'boolean' ? defaults.dictationEnabled : state.dictationEnabled,
                             dictationAutoSend: defaults.dictationAutoSend ?? state.dictationAutoSend,
                             sttProvider: defaults.sttProvider ?? state.sttProvider,
+                            sttStreaming: defaults.sttStreaming ?? state.sttStreaming,
                             sttServerUrl: defaults.sttServerUrl ?? state.sttServerUrl,
                             sttModel: defaults.sttModel ?? state.sttModel,
                             sttEndpointPath: defaults.sttEndpointPath ?? state.sttEndpointPath,
@@ -4233,6 +4239,12 @@ export const useConfigStore = create<ConfigStore>()(
                         localStorage.setItem('sttProvider', provider);
                     }
                     updateDesktopSettings({ sttProvider: provider }).catch(() => {});
+                },
+
+                setSttStreaming: (enabled: boolean) => {
+                    set({ sttStreaming: enabled });
+                    getSafeStorage().setItem('sttStreaming', String(enabled));
+                    updateDesktopSettings({ sttStreaming: enabled }).catch(() => {});
                 },
 
                 setSttServerUrl: (url: string) => {

@@ -2202,6 +2202,8 @@ export const settingsDict = {
   'settings.voice.page.field.selectLanguagePlaceholder': 'בחר שפה',
   'settings.voice.page.field.sttBrowserSupportError': 'MediaRecorder או AudioContext אינם זמינים בדפדפן הזה. ייתכן ש-STT בשרת לא יעבוד.',
   'settings.voice.page.field.sttServerUrlHint': 'כתובת URL בסיסית של שרת תואם Whisper',
+  "settings.voice.page.field.sttStreaming": "הזרמה בזמן אמת (OpenCodex)",
+  "settings.voice.page.field.sttStreamingHint": "משתמש בכתובת השרת ובמפתח API. המודל והנתיב אינם בשימוש. משך ההפעלה מוגבל לחמש דקות.",
   'settings.voice.page.field.sttLanguageHint': 'קוד BCP-47 (לדוגמה en, fr). יש להשאיר ריק לזיהוי אוטומטי.',
   'settings.voice.page.field.correctTranscript': 'תיקון מילים שנשמעו לא נכון',
   'settings.voice.page.field.correctTranscriptInfo': 'כשמפסיקים להכתיב, המודל הקטן קורא את הטקסט ומתקן מילים שמודל זיהוי הדיבור שמע לא נכון. הטקסט המוכתב נשלח לספק של המודל הקטן ומופיע שנייה או שתיים מאוחר יותר.',

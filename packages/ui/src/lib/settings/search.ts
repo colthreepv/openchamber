@@ -1524,6 +1524,17 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     },
   },
   {
+    id: 'voice.stt-streaming',
+    page: 'voice',
+    titleKey: 'settings.voice.page.field.sttStreaming',
+    descriptionKey: 'settings.voice.page.field.sttStreamingHint',
+    keywords: ['stt', 'dictation', 'streaming', 'opencodex'],
+    isAvailable: (ctx) => {
+      const state = ctx.voiceSettings ?? useConfigStore.getState();
+      return state.dictationEnabled && state.sttProvider === 'openai-compatible';
+    },
+  },
+  {
     id: 'voice.stt-endpoint-path',
     page: 'voice',
     titleKey: 'settings.voice.page.field.endpointPath',

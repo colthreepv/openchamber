@@ -2066,6 +2066,8 @@ export const settingsDict = {
   'settings.voice.page.field.selectLanguagePlaceholder': '選擇語言',
   'settings.voice.page.field.sttBrowserSupportError': '此瀏覽器不支援 MediaRecorder 或 AudioContext。伺服器 STT 可能無法運作。',
   'settings.voice.page.field.sttServerUrlHint': 'Whisper 相容伺服器的基礎 URL',
+  "settings.voice.page.field.sttStreaming": "即時串流 (OpenCodex)",
+  "settings.voice.page.field.sttStreamingHint": "使用伺服器 URL 和 API 金鑰，忽略模型和端點路徑。工作階段最長五分鐘。",
   'settings.voice.page.field.sttLanguageHint': 'BCP-47 程式碼（例如 en、fr）。留空為自動偵測。',
   'settings.voice.page.field.correctTranscript': '修正聽錯的詞',
   'settings.voice.page.field.correctTranscriptInfo': '停止聽寫後，小模型會閱讀文字，修正語音辨識聽錯的詞。聽寫的文字會傳送給小模型的供應商，並在一兩秒後出現。',

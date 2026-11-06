@@ -2100,6 +2100,8 @@ export const settingsDict = {
   'settings.voice.page.field.selectLanguagePlaceholder': 'Dil seç',
   'settings.voice.page.field.sttBrowserSupportError': 'Bu tarayıcıda MediaRecorder veya AudioContext kullanılamıyor. Sunucu STT çalışmayabilir.',
   'settings.voice.page.field.sttServerUrlHint': 'Whisper uyumlu sunucunun temel URL\'si',
+  "settings.voice.page.field.sttStreaming": "Gerçek zamanlı akış (OpenCodex)",
+  "settings.voice.page.field.sttStreamingHint": "Sunucu URL’si ve API anahtarı kullanılır. Model ve uç nokta yolu yok sayılır. Oturumlar beş dakika ile sınırlıdır.",
   'settings.voice.page.field.sttLanguageHint': 'BCP-47 kodu (örneğin en, fr). Otomatik algılama için boş bırakın.',
   'settings.voice.page.field.correctTranscript': 'Yanlış duyulan kelimeleri düzelt',
   'settings.voice.page.field.correctTranscriptInfo': 'Dikteyi durdurduğunuzda küçük model metni okur ve konuşma tanıma modelinin yanlış duyduğu kelimeleri düzeltir. Dikte edilen metin küçük modelin sağlayıcısına gider ve bir iki saniye sonra görünür.',

@@ -16,6 +16,7 @@ import path from 'path';
 
 import { DictationWorkerClient, WorkerBackedTranscriptionSession } from './local/worker-client.js';
 import { OpenAICompatibleTranscriptionSession } from './openai-compatible-session.js';
+import { OpenCodexTranscriptionSession } from './opencodex-session.js';
 import {
   DEFAULT_LOCAL_STT_MODEL,
   DEFAULT_LOCAL_TTS_MODEL,
@@ -109,7 +110,8 @@ export function createDictationService({ modelsDir }) {
 
     if (provider === 'openai-compatible') {
       const config = options.openaiCompatible || {};
-      const session = new OpenAICompatibleTranscriptionSession({
+      const Session = config.streaming === true ? OpenCodexTranscriptionSession : OpenAICompatibleTranscriptionSession;
+      const session = new Session({
         baseURL: config.baseUrl,
         model: config.model,
         // The key stored in Settings; one sent with the request comes from a
@@ -123,7 +125,7 @@ export function createDictationService({ modelsDir }) {
       } catch (error) {
         return {
           error: error?.message || String(error),
-          retryable: false,
+          retryable: config.streaming === true,
           reasonCode: 'stt_not_configured',
         };
       }

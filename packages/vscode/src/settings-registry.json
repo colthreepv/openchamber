@@ -265,6 +265,9 @@
     "sttProvider": {
       "scope": "instance"
     },
+    "sttStreaming": {
+      "scope": "instance"
+    },
     "sttServerUrl": {
       "scope": "instance"
     },
