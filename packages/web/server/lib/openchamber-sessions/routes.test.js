@@ -651,6 +651,23 @@ describe('openchamber session routes', () => {
     });
   });
 
+  it('records the initiating session atomically before work starts in another directory', async () => {
+    const { app } = createApp();
+    await request(app)
+      .post('/api/openchamber/sessions')
+      .send({ directory: '/repo/app', title: 'Side task', promptedBySessionId: 'ses_everyday' })
+      .expect(200);
+
+    expect(sessionCreateMock).toHaveBeenCalledWith({
+      location: { directory: '/repo/app' },
+      title: 'Side task',
+      metadata: { openchamber: {
+        workTitle: { title: 'Side task', by: 'user' },
+        startedBy: { sessionID: 'ses_everyday' },
+      } },
+    });
+  });
+
   it('records no name when the session is created without a title', async () => {
     const { app } = createApp();
     await request(app)

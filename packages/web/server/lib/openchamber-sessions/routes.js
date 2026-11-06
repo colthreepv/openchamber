@@ -339,11 +339,17 @@ const applySessionSelection = async ({ client, sessionID, model, agent, variant 
   if (agent) await client.session.switchAgent({ sessionID, agent });
 };
 
-const createSession = async ({ client, directory, title, titleByUser = false }) => {
+const createSession = async ({ client, directory, title, titleByUser = false, startedBySessionId }) => {
   const input = { location: { directory } };
   if (title) {
     input.title = title;
     if (titleByUser) input.metadata = { openchamber: { workTitle: { title, by: 'user' } } };
+  }
+  if (startedBySessionId) {
+    input.metadata = {
+      ...input.metadata,
+      openchamber: { ...input.metadata?.openchamber, startedBy: { sessionID: startedBySessionId } },
+    };
   }
   const session = await client.session.create(input);
   const sessionID = asNonEmptyString(session?.id);
@@ -1238,6 +1244,7 @@ export const createOpenChamberSessionService = (dependencies) => {
       directory: sessionDirectory,
       ...(title ? { title } : {}),
       titleByUser,
+      startedBySessionId: asNonEmptyString(payload.promptedBySessionId),
     });
     onCreated();
 
