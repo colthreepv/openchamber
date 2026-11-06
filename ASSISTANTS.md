@@ -23,6 +23,20 @@ Existing `AGENTS.md` files are preserved. A failed creation can leave a
 registered workspace; open its assistant row to finish the canonical session.
 Do not delete a workspace to retry creation.
 
+## Memory
+
+Recall over past conversations requires message search. It is off by
+default: turn on **Settings → Chat → Message search** on the server that
+hosts the assistants. While it is off, `openchamber_memory` recall and zoom
+answer that search is disabled, and nothing is indexed. Turning it on starts a
+backfill; recall reports incomplete results until it finishes.
+
+Recall and zoom cover the assistant's canonical conversation and the work
+sessions it started. The tool description is the assistant's only instruction
+for recall; it lives in `MEMORY_TOOL_DESCRIPTION`
+(`packages/web/server/lib/agent-tool/runtime.js`). Design and plan:
+[issue #2](https://github.com/colthreepv/openchamber/issues/2).
+
 ## Build and preview
 
 ```powershell
