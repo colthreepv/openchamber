@@ -14,7 +14,7 @@ connected server's implementation. There is no client-side model call or UI.
 ## Invariants
 
 - Tree work requires `messageSearchEnabled: true`,
-  `agentMemoryToolEnabled` other than false, and `assistantMemoryTreeEnabled`
+  `agentMemoryToolEnabled: true` (memory is off by default), and `assistantMemoryTreeEnabled`
   other than false. The dedicated kill switch defaults on. Settings live on
   the server and apply at use time; turning them off stops subsequent model
   calls and rejects in-flight writes. Existing summaries remain on disk.

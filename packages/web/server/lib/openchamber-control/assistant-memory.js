@@ -62,7 +62,7 @@ export const listAssistantMemorySessions = async (client) => {
 export const createAssistantMemoryActions = ({ getClient, messageSearch, readSettings, memoryTree }) => ({
   async execute(action, rawInput, callerId) {
     const settings = await readSettings();
-    if (settings.agentMemoryToolEnabled === false) fail('The memory tool is disabled in Settings.', 403);
+    if (settings.agentMemoryToolEnabled !== true) fail('The memory tool is disabled in Settings.', 403);
     if (!messageSearch || settings.messageSearchEnabled !== true) fail(SEARCH_OFF, 503);
     const status = await messageSearch.status();
     if (status.state !== 'on') fail(SEARCH_OFF, 503);

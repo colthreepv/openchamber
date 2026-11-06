@@ -19,7 +19,7 @@ the user can want independently:
 - `openchamber_web` — looking at and interacting with the page in OpenChamber's
   browser panel. Enabled while `agentWebToolEnabled` is not `false`.
 - `openchamber_memory` exposes saved facts and assistant conversation recall.
-  The existing `agentMemoryToolEnabled` setting enables both by default;
+  The existing `agentMemoryToolEnabled` setting enables both; it is off by default;
   recall and zoom refuse stale-plugin calls when it is off. `memory.recall`
   searches the message index with a query, inclusive epoch-millisecond
   `since` / `until`, and `limit` defaulting to 10, capped at 50.

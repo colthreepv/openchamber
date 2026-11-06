@@ -388,7 +388,7 @@ other.
 
 ### Why recall extends the existing memory tool
 
-`openchamber_memory` and its default-on setting already own saved facts.
+`openchamber_memory` and its off-by-default setting already own saved facts.
 Adding recall and zoom preserves that API and avoids a second tool with the
 same name or a second setting governing one tool. Conversation reads stay
 assistant-scoped independently of saved facts' project/global scope.

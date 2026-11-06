@@ -22,11 +22,16 @@ Do not delete a workspace to retry creation.
 
 ## Memory
 
-Recall over past conversations requires message search. It is off by
-default: turn on **Settings → Chat → Message search** on the server that
-hosts the assistants. While it is off, `openchamber_memory` recall and zoom
-answer that search is disabled, and nothing is indexed. Turning it on starts a
-backfill; recall reports incomplete results until it finishes.
+Assistant memory needs two settings on the server that hosts the assistants,
+both off by default:
+
+- **Settings → Chat → Message search** (`messageSearchEnabled`). While it is
+  off nothing is indexed and recall and zoom answer that search is disabled.
+  Turning it on starts a backfill; recall reports incomplete results until it
+  finishes.
+- **Memory** (`agentMemoryToolEnabled`). While it is off OpenCode gets no
+  `openchamber_memory` tool, the server refuses recall and zoom, and no
+  summary tree is built.
 
 Recall and zoom cover the assistant's canonical conversation and the work
 sessions it started. The tool description is the assistant's only instruction

@@ -13,7 +13,7 @@ const isCanonicalAssistant = (session) => {
   const marker = session.metadata?.openchamber?.assistant ?? session.metadata?.assistant;
   return !session.parentID && marker?.canonical === true && Boolean(asNonEmptyString(marker.name));
 };
-const enabled = (settings) => settings.messageSearchEnabled === true && settings.agentMemoryToolEnabled !== false && settings.assistantMemoryTreeEnabled !== false;
+const enabled = (settings) => settings.messageSearchEnabled === true && settings.agentMemoryToolEnabled === true && settings.assistantMemoryTreeEnabled !== false;
 
 // Adapted from VictorTaelin/uniichat Memory.ts and prompt.txt, Apache-2.0.
 // <chat> supplies context only; <input> alone supplies the facts being stored.
