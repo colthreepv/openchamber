@@ -6,6 +6,15 @@ import { registerAuthAndAccessRoutes, registerCommonRequestMiddleware, registerH
 import { createServerDiagnosticJournal } from '../diagnostics/server-journal.js';
 
 describe('core-routes', () => {
+  it('advertises assistant navigation on health and version', async () => {
+    const app = express();
+    registerServerStatusRoutes(app, { express, process, getHealthSnapshot: () => ({}), gracefulShutdown: vi.fn() });
+    for (const path of ['/health', '/api/version']) {
+      const response = await request(app).get(path).expect(200);
+      expect(response.body.compatibility.capabilities).toContain('ui.assistants.v1');
+    }
+  });
+
   it('captures the final response status, including missing routes and parser errors, without request data', async () => {
     const journal = createServerDiagnosticJournal();
     const app = express();

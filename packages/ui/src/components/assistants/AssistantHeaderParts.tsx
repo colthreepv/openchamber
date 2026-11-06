@@ -2,7 +2,7 @@ import React from 'react';
 
 import { openSessionInChat } from '@/lib/assistants/assistantActions';
 import { useI18n } from '@/lib/i18n';
-import { useAssistantsMode } from '@/lib/assistants/assistantsMode';
+import { useAssistantNavigation } from '@/lib/assistants/assistantsMode';
 import { useAssistantForSession } from '@/stores/useAssistantStore';
 
 import { AssistantAvatar } from './AssistantAvatar';
@@ -21,7 +21,7 @@ import { AssistantAvatar } from './AssistantAvatar';
 
 export const AssistantHeaderBadge: React.FC<{ sessionId: string | null | undefined; size?: number }> = ({ sessionId, size = 28 }) => {
   const { t } = useI18n();
-  const enabled = useAssistantsMode((state) => state.enabled);
+  const enabled = useAssistantNavigation();
   const owner = useAssistantForSession(enabled ? sessionId : null);
   if (!owner || owner.isCanonical) return null;
   const { assistant } = owner;
@@ -49,7 +49,7 @@ export const AssistantHeaderLabel: React.FC<{
   fallback: React.ReactNode;
 }> = ({ sessionId, title, fallback }) => {
   const { t } = useI18n();
-  const enabled = useAssistantsMode((state) => state.enabled);
+  const enabled = useAssistantNavigation();
   const owner = useAssistantForSession(enabled ? sessionId : null);
   if (!owner) return <>{fallback}</>;
   const { assistant, isCanonical } = owner;

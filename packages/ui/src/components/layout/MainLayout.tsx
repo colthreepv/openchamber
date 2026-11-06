@@ -19,7 +19,7 @@ import { ErrorBoundary } from '../ui/ErrorBoundary';
 import { SessionSidebar } from '@/components/session/SessionSidebar';
 import { AssistantSidebar } from '@/components/assistants/AssistantSidebar';
 import { CreateAssistantSurface } from '@/components/assistants/CreateAssistantSurface';
-import { useAssistantsMode } from '@/lib/assistants/assistantsMode';
+import { useAssistantNavigation } from '@/lib/assistants/assistantsMode';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/icon/Icon';
 import { useI18n } from '@/lib/i18n';
@@ -88,7 +88,7 @@ const OnDemand: React.FC<{
  */
 const LeftSidebar = React.memo<{ isMobile: boolean }>(({ isMobile }) => {
     const isSidebarOpen = useUIStore((state) => state.isSidebarOpen);
-    const assistantsMode = useAssistantsMode((state) => state.enabled);
+    const assistantsMode = useAssistantNavigation();
     const [createAssistantOpen, setCreateAssistantOpen] = React.useState(false);
     const { t } = useI18n();
     const peek = useSidebarPeek({ enabled: !isSidebarOpen && !isMobile, layoutAnimationMs: useLayoutAnimationMs() });

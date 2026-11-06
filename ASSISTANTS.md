@@ -10,9 +10,9 @@ canonical conversation. Its work sessions can run in other directories.
 The sidebar groups work by `metadata.openchamber.startedBy.sessionID`.
 See `packages/ui/src/lib/assistants/DOCUMENTATION.md` for the data contract.
 
-The assistant navigation is enabled by default in web, Electron and mobile.
-Open `?assistants=off` to return to stock navigation on that client; use
-`?assistants=on` to restore it. VS Code keeps its stock sidebar.
+Assistant navigation defaults on when the connected server advertises `ui.assistants.v1`; otherwise it defaults off.
+Open `?assistants=off` to return to stock navigation for that server; use
+`?assistants=on` to restore it. Overrides are stored per runtime. VS Code keeps its stock sidebar.
 
 Create an assistant with its name, role, uploaded avatar and optional model.
 Its scratchpad lives under the server home at `assistants/<slug>`.

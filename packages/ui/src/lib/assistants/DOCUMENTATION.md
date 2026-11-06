@@ -23,7 +23,8 @@ stock sidebar; the assistant navigation is not mounted there.
 - Busy state comes from the global live status index. A load failure retains
   cached rows and exposes retry; an empty list alone does not prove successful
   loading.
-- `?assistants=off` restores the stock navigation for the current client.
+- Navigation defaults to the connected server's `ui.assistants.v1` capability. While loading or on failure, retain the last successful in-memory value for that runtime, or use stock navigation if none exists.
+- `?assistants=on|off` stores an override for the current runtime only. The old global key is ignored. Transient runtimes do not persist overrides.
 
 ## Decisions
 

@@ -65,7 +65,7 @@ import { useEdgeSwipe } from './useEdgeSwipe';
 import { ScrollableOverlay } from '@/components/ui/ScrollableOverlay';
 import { AssistantSidebar } from '@/components/assistants/AssistantSidebar';
 import { CreateAssistantSurface } from '@/components/assistants/CreateAssistantSurface';
-import { useAssistantsMode } from '@/lib/assistants/assistantsMode';
+import { useAssistantNavigation } from '@/lib/assistants/assistantsMode';
 
 type MobileSessionsSheetProps = {
   open: boolean;
@@ -209,7 +209,7 @@ export const MobileSessionsSheet: React.FC<MobileSessionsSheetProps> = ({ open, 
   const [editingOrder, setEditingOrder] = React.useState(false);
   const [openId, setOpenId] = React.useState(0);
   // Assistants fork: the sheet lists assistants instead of projects while the mode is on.
-  const assistantsMode = useAssistantsMode((state) => state.enabled);
+  const assistantsMode = useAssistantNavigation();
   const [createAssistantOpen, setCreateAssistantOpen] = React.useState(false);
   // The iPad's sidebar keeps its search behind a header button, as the
   // desktop's does; the phone's drawer shows the field at once.
