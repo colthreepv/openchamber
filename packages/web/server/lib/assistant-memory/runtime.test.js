@@ -18,7 +18,7 @@ const messages = (count, long = false) => Array.from({ length: count }, (_, i) =
 const setup = async ({ rows = messages(2), generate, settings: extra = {}, waitMs = 3000, isTreeOwner } = {}) => {
   const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'assistant-tree-'));
   cleanups.push(() => fs.rm(dataDir, { recursive: true, force: true }));
-  const settings = { messageSearchEnabled: true, ...extra };
+  const settings = { messageSearchEnabled: true, agentMemoryToolEnabled: true, ...extra };
   const search = { memoryMessages: () => rows, status: async () => ({ state: 'on' }) };
   const runtime = createAssistantMemoryRuntime({ dataDir, messageSearch: search, readSettings: async () => settings, generate, waitMs, isTreeOwner });
   cleanups.push(() => runtime.stop());
@@ -146,7 +146,7 @@ describe('persistent assistant memory', () => {
     generate.mockImplementation(async () => ({ providerID: 'p', modelID: 'm', text: '[{"id":"u0","text":"reply: done"}]' }));
     await new Promise((resolve) => setTimeout(resolve, 10));
   });
-  it.each([{ messageSearchEnabled: false }, { agentMemoryToolEnabled: false }, { assistantMemoryTreeEnabled: false }])('gates all tree work for %j', async (settings) => {
+  it.each([{ messageSearchEnabled: false }, { agentMemoryToolEnabled: false }, { agentMemoryToolEnabled: undefined }, { assistantMemoryTreeEnabled: false }])('gates all tree work for %j', async (settings) => {
     const generate = vi.fn();
     const { runtime } = await setup({ generate, settings });
     runtime.schedule(session);

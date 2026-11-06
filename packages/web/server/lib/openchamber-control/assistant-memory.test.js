@@ -34,7 +34,7 @@ const setup = (overrides = {}) => {
   };
   const list = vi.fn(async () => ({ data: sessions }));
   const actions = createAssistantMemoryActions({ getClient: async () => ({ session: { list } }), messageSearch,
-    readSettings: async () => ({ messageSearchEnabled: true, ...overrides.settings }) });
+    readSettings: async () => ({ messageSearchEnabled: true, agentMemoryToolEnabled: true, ...overrides.settings }) });
   return { store, actions, messageSearch, list, index };
 };
 
@@ -56,7 +56,7 @@ describe('assistant memory actions with SQLite', () => {
       ? { children: [{ id: 'mem:0:0' }, { id: 'mem:0:1' }] }
       : { messageId: 'u1' });
     const actions = createAssistantMemoryActions({ getClient: async () => ({ session: { list: async () => ({ data: sessions }) } }),
-      messageSearch, memoryTree: { zoom }, readSettings: async () => ({ messageSearchEnabled: true }) });
+      messageSearch, memoryTree: { zoom }, readSettings: async () => ({ messageSearchEnabled: true, agentMemoryToolEnabled: true }) });
     expect((await actions.execute('memory.zoom', { nodeId: 'mem:1:0', sessionId: 'other' }, 'work')).children).toHaveLength(2);
     expect(zoom).toHaveBeenCalledWith('a', 'mem:1:0');
     expect((await actions.execute('memory.zoom', { nodeId: 'mem:0:0', sessionId: 'other' }, 'work')).messages.map((m) => m.id)).toEqual(['u1', 'r1', 'r2']);
@@ -78,7 +78,7 @@ describe('assistant memory actions with SQLite', () => {
     await expect(actions.execute('memory.zoom', { sessionId: 'other', messageId: 'x1' }, 'a')).rejects.toThrow('outside');
     await expect(actions.execute('memory.zoom', { sessionId: 'a', messageId: 'absent' }, 'a')).rejects.toThrow('not in the index');
   });
-  it.each([{ agentMemoryToolEnabled: false }, { messageSearchEnabled: false }])('refuses disabled settings %j', async (settings) => {
+  it.each([{ agentMemoryToolEnabled: false }, { agentMemoryToolEnabled: undefined }, { messageSearchEnabled: false }])('refuses disabled settings %j', async (settings) => {
     const { actions, list } = setup({ settings });
     await expect(actions.execute('memory.recall', { query: 'postgres' }, 'a')).rejects.toThrow(/disabled|Settings → Chat/);
     expect(list).not.toHaveBeenCalled();
@@ -92,7 +92,7 @@ describe('assistant memory actions with SQLite', () => {
   it('dispatches recall and zoom through the control service without requiring saved-fact storage', async () => {
     const { messageSearch } = setup();
     const service = createOpenChamberControlService({
-      messageSearch, readSettingsFromDiskMigrated: async () => ({ messageSearchEnabled: true }),
+      messageSearch, readSettingsFromDiskMigrated: async () => ({ messageSearchEnabled: true, agentMemoryToolEnabled: true }),
       buildOpenCodeUrl: () => 'http://localhost:1/api/info', getOpenCodeAuthHeaders: () => ({}),
       createClient: () => ({ session: { list: async () => ({ data: sessions }) } }),
     });
