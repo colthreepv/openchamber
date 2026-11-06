@@ -55,7 +55,7 @@ connected server's implementation. There is no client-side model call or UI.
   derived index preserves paid summaries until that session finishes syncing.
 - A checkpoint includes its format header and covers all indexed exchanges
   within 24 KiB. Oldest built adjacent siblings merge first. Unbuilt leaves
-  have zoomable markers. If built parents cannot fit complete coverage, the
+  remain zoomable but prevent a checkpoint. If built parents cannot fit complete coverage, the
   checkpoint is unavailable. Compaction waits at most 3 seconds for the build;
   the plugin's callback deadline is 5 seconds. Errors, disabled settings,
   empty trees and noncanonical sessions leave OpenCode's result unset.
@@ -63,11 +63,11 @@ connected server's implementation. There is no client-side model call or UI.
   the tree owner, matching recall and zoom. Alias canonical sessions receive
   native compaction and create no duplicate tree. Reconnect schedules both
   freshly synced and already-current canonical sessions, resuming backlogs.
-- The hook fails open when the latest turn contains tool calls/results,
+- The hook fails open when any visible history contains non-text parts or tool messages,
   ends with a user message, lacks message IDs, or its first/last IDs do not
   match the final indexed exchange. This applies to precompute as well as
   manual and automatic compaction, because the hook exposes the same request
-  shape. Native compaction preserves unfinished working state outside the
+  shape. Native compaction preserves working state outside the
   text index. A tree checkpoint therefore replaces only covered text turns.
 - The plugin sets only `result.summary`. OpenCode owns its verbatim-tail
   split and `metadata.keepID`. No per-turn prompt or history rewrite occurs.
@@ -93,8 +93,8 @@ exchanges and small merges use no generation call.
 ### Why an incomplete view falls back to OpenCode
 
 A prefix-only checkpoint would claim to remember a conversation it did not
-cover. Unresolved leaf markers retain pointers where possible; a view that
-still exceeds the budget leaves native compaction in charge.
+cover. Missing summaries and views that exceed the budget leave native
+compaction in charge.
 
 ### Why there is no hot layer
 

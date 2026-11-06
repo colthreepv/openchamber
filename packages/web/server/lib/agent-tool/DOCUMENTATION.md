@@ -329,8 +329,8 @@ empty, failed and timed-out requests leave `event.result` unset. Tree budgets,
 model settings and runtime availability are in
 `../assistant-memory/DOCUMENTATION.md`.
 
-The hook also leaves native compaction in charge for tool-bearing or
-unfinished current turns. It sends only the latest turn's user/reply IDs to
+The hook also leaves native compaction in charge for visible non-text history or
+unfinished turns. It sends only the latest turn's user/reply IDs to
 the callback, where they must match the indexed final exchange. Historical
 tree memory cannot replace unindexed current working state.
 

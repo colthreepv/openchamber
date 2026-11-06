@@ -98,6 +98,14 @@ describe('agent tool action allowlist', () => {
       await hooks.compaction(busy); expect(busy.result).toBeUndefined();
       const toolTurn = { ...event, result: undefined, messages: [...event.messages, { role: 'assistant', id: 'a2', content: [{ type: 'tool-call' }] }] };
       await hooks.compaction(toolTurn); expect(toolTurn.result).toBeUndefined();
+      const oldToolTurn = { ...event, result: undefined, messages: [
+        { role: 'assistant', id: 'old', content: [{ type: 'tool-call' }] }, ...event.messages,
+      ] };
+      await hooks.compaction(oldToolTurn); expect(oldToolTurn.result).toBeUndefined();
+      const attachmentTurn = { ...event, result: undefined, messages: [
+        { ...event.messages[0], content: [{ type: 'image' }] }, event.messages[1],
+      ] };
+      await hooks.compaction(attachmentTurn); expect(attachmentTurn.result).toBeUndefined();
       const stale = { ...event, result: undefined, messages: [{ role: 'user', id: 'u1', content: [] }, { role: 'assistant', id: 'missing', content: [] }] };
       await hooks.compaction(stale); expect(stale.result).toBeUndefined();
       const unrelated = { ...event, result: undefined, sessionID: 'work' }; await hooks.compaction(unrelated);

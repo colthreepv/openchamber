@@ -49,7 +49,7 @@ The managed OpenCode compaction hook inserts a tree view with zoomable
 native compaction when memory is unavailable or incomplete. Work sessions
 remain searchable but do not build trees.
 
-Tool-bearing and unfinished current turns keep native compaction, because
+Histories with visible non-text parts and unfinished turns keep native compaction, because
 their working state is outside the text index. Only the oldest canonical
 session per assistant directory owns a tree; duplicate markers use native
 compaction so checkpoint node IDs and zoom keep the same owner.

@@ -834,7 +834,7 @@ export default {
         const lastUser = messages.findLastIndex((message) => message.role === "user")
         const turn = messages.slice(lastUser)
         if (lastUser < 0 || turn.at(-1)?.role !== "assistant") return
-        if (turn.some((message) => Array.isArray(message.content) && message.content.some((part) => part.type === "tool-call" || part.type === "tool-result"))) return
+        if (messages.some((message) => message.role === "tool" || (Array.isArray(message.content) && message.content.some((part) => part.type !== "text")))) return
         const userId = turn[0].id
         const replyId = turn.at(-1).id
         if (!userId || !replyId) return

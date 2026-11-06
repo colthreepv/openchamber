@@ -97,8 +97,7 @@ describe('persistent assistant memory', () => {
     const rows = messages(2); rows[1].text = 'x'.repeat(100_000);
     const { runtime } = await setup({ rows, generate: vi.fn() });
     const result = await runtime.checkpoint(session);
-    expect(result.summary).toContain('mem:0:1');
-    expect(result.summary).toContain('not summarized yet');
+    expect(result).toBeNull();
     expect((await runtime.zoom(session.id, 'mem:0:1')).node.model).toBe('verbatim');
   });
   it('batches leaves, retries over-budget output once, clips UTF-8 and preserves short user text', async () => {
@@ -123,12 +122,11 @@ describe('persistent assistant memory', () => {
     expect(await runtime.checkpoint(session)).toBeNull();
     expect(generate).toHaveBeenCalledTimes(1);
   });
-  it('retains partial batch success and zoom markers for missing IDs', async () => {
+  it('retains partial batch success but uses native compaction until coverage is complete', async () => {
     const generate = vi.fn(async () => ({ providerID: 'p', modelID: 'm', text: '[{"id":"u0","text":"reply: found"},{"id":"extra","text":"ignored"}]' }));
     const { runtime } = await setup({ rows: messages(2, true), generate });
     const result = await runtime.checkpoint(session);
-    expect(result.summary).toContain('mem:0:1');
-    expect(result.summary).toContain('not summarized yet');
+    expect(result).toBeNull();
     expect((await runtime.zoom(session.id, 'mem:0:1')).messageId).toBe('u1');
     await runtime.checkpoint(session);
     expect(generate).toHaveBeenCalledTimes(1);
