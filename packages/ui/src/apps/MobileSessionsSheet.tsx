@@ -63,6 +63,9 @@ import { MobileSessionList } from './mobileSidebar/MobileSessionList';
 import { MobileSidebarActionsProvider, useMobileSidebarRowsStore, type MobileSidebarActions } from './mobileSidebar/mobileSidebarState';
 import { useEdgeSwipe } from './useEdgeSwipe';
 import { ScrollableOverlay } from '@/components/ui/ScrollableOverlay';
+import { AssistantSidebar } from '@/components/assistants/AssistantSidebar';
+import { CreateAssistantSurface } from '@/components/assistants/CreateAssistantSurface';
+import { useAssistantsMode } from '@/lib/assistants/assistantsMode';
 
 type MobileSessionsSheetProps = {
   open: boolean;
@@ -205,6 +208,9 @@ export const MobileSessionsSheet: React.FC<MobileSessionsSheetProps> = ({ open, 
   const [worktreeDialogProjectId, setWorktreeDialogProjectId] = React.useState<string | null>(null);
   const [editingOrder, setEditingOrder] = React.useState(false);
   const [openId, setOpenId] = React.useState(0);
+  // Assistants fork: the sheet lists assistants instead of projects while the mode is on.
+  const assistantsMode = useAssistantsMode((state) => state.enabled);
+  const [createAssistantOpen, setCreateAssistantOpen] = React.useState(false);
   // The iPad's sidebar keeps its search behind a header button, as the
   // desktop's does; the phone's drawer shows the field at once.
   const [searchOpen, setSearchOpen] = React.useState(false);
@@ -241,6 +247,14 @@ export const MobileSessionsSheet: React.FC<MobileSessionsSheetProps> = ({ open, 
   }, [listActive]);
 
   const close = React.useCallback(() => onOpenChange(false), [onOpenChange]);
+  // Creation may select its new session asynchronously after the form closes.
+  // Observe the actual selection rather than treating cancel as navigation.
+  React.useEffect(() => {
+    if (!assistantsMode || !open || variant !== 'drawer') return;
+    return useSessionUIStore.subscribe((state, previous) => {
+      if (state.currentSessionId && state.currentSessionId !== previous.currentSessionId) close();
+    });
+  }, [assistantsMode, close, open, variant]);
   const sidebarActions = React.useMemo<MobileSidebarActions>(() => ({
     close,
     openProjectEdit: setEditingProjectId,
@@ -484,7 +498,7 @@ export const MobileSessionsSheet: React.FC<MobileSessionsSheetProps> = ({ open, 
       <div className="flex min-h-0 flex-1 flex-col">
         {/* The list scrolls under the search field: the list is virtualized
             in its own scroller, which the field cannot join. */}
-        {!editingOrder && !empty && searchShown ? (
+        {!assistantsMode && !editingOrder && !empty && searchShown ? (
           <div className={cn('shrink-0 px-3 pb-2', variant === 'sidebar' ? 'pt-2' : 'pt-1')}>
             <SessionSearchInput
               inputRef={searchInputRef}
@@ -498,7 +512,7 @@ export const MobileSessionsSheet: React.FC<MobileSessionsSheetProps> = ({ open, 
             />
           </div>
         ) : null}
-        {empty ? (
+        {!assistantsMode && empty ? (
           <div className="min-h-0 flex-1">
             <MobileSessionsEmpty
               title={t('mobile.sessions.empty.noProjectsTitle')}
@@ -516,7 +530,7 @@ export const MobileSessionsSheet: React.FC<MobileSessionsSheetProps> = ({ open, 
             />
           </div>
         ) : null}
-        {editingOrder ? (
+        {!assistantsMode && editingOrder ? (
           <ScrollableOverlay outerClassName="min-h-0 flex-1" className="pb-4" useScrollShadow disableHorizontal>
             <div className="flex flex-col gap-2 px-3 py-2">
               <p className="px-1 typography-micro text-muted-foreground">{t('mobile.sessions.editOrderHint')}</p>
@@ -531,11 +545,13 @@ export const MobileSessionsSheet: React.FC<MobileSessionsSheetProps> = ({ open, 
           </ScrollableOverlay>
         ) : null}
         {/* Mounted while reordering too, so the list comes back as it was. */}
-        <div className={cn('flex min-h-0 flex-1 flex-col', (editingOrder || empty) && 'hidden')}>
+        {assistantsMode ? (
+          <AssistantSidebar variant="phone" active={listActive} onNavigate={variant === 'drawer' ? close : undefined} onCreateAssistant={() => setCreateAssistantOpen(true)} />
+        ) : <div className={cn('flex min-h-0 flex-1 flex-col', (editingOrder || empty) && 'hidden')}>
           <MobileSidebarActionsProvider value={sidebarActions}>
             <SessionSidebar mobileVariant isVisible={listActive} phone={phoneList} />
           </MobileSidebarActionsProvider>
-        </div>
+        </div>}
 
         {/* App-level footer, as the desktop sidebar's: the connected
             instance (Capacitor) on the left, a pending web update and
@@ -602,6 +618,7 @@ export const MobileSessionsSheet: React.FC<MobileSessionsSheetProps> = ({ open, 
           </div>
         ) : null}
 
+        <CreateAssistantSurface open={assistantsMode && createAssistantOpen} onClose={() => setCreateAssistantOpen(false)} variant="phone" />
         <DirectoryExplorerDialog open={directoryDialogOpen} onOpenChange={setDirectoryDialogOpen} />
         <NewWorktreeDialog
           open={newWorktreeDialogOpen}
@@ -641,7 +658,8 @@ export const MobileSessionsSheet: React.FC<MobileSessionsSheetProps> = ({ open, 
         {/* No title: the list below says what this is, and the actions need
             the width. Search opens from the leading button, as on the desktop. */}
         <div className="flex h-[var(--oc-header-height,56px)] shrink-0 items-center gap-2 border-b border-edge px-3">
-          {!editingOrder && !empty ? (
+          {assistantsMode ? <span className="typography-ui-label font-semibold">{t('assistants.title')}</span> : null}
+          {!assistantsMode && !editingOrder && !empty ? (
             <Button
               type="button"
               variant="chip"
@@ -655,7 +673,7 @@ export const MobileSessionsSheet: React.FC<MobileSessionsSheetProps> = ({ open, 
               <Icon name="search" className="size-4" />
             </Button>
           ) : null}
-          <div className="ms-auto flex shrink-0 items-center gap-2">{trailingActions}</div>
+          {!assistantsMode ? <div className="ms-auto flex shrink-0 items-center gap-2">{trailingActions}</div> : null}
         </div>
         {surfaceContent}
       </div>
@@ -665,7 +683,10 @@ export const MobileSessionsSheet: React.FC<MobileSessionsSheetProps> = ({ open, 
   return (
     <MobileSessionsDrawerContainer
       open={open}
-      onClose={close}
+      onClose={() => {
+        if (createAssistantOpen) setCreateAssistantOpen(false);
+        else close();
+      }}
       // The mirror of the swipe that opened the drawer closes it again —
       // except while a row has its actions out: then the same swipe is the
       // user putting those away, so it only clears them.
@@ -689,7 +710,8 @@ export const MobileSessionsSheet: React.FC<MobileSessionsSheetProps> = ({ open, 
         >
           <Icon name="close" className="size-5" />
         </button>
-        <div className="ms-auto flex shrink-0 items-center gap-2">{trailingActions}</div>
+        {assistantsMode ? <span className="typography-ui-label font-semibold">{t('assistants.title')}</span> : null}
+        {!assistantsMode ? <div className="ms-auto flex shrink-0 items-center gap-2">{trailingActions}</div> : null}
       </div>
       {surfaceContent}
     </MobileSessionsDrawerContainer>

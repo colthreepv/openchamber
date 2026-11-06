@@ -11,6 +11,7 @@ import { useSessionUIStore } from '@/sync/session-ui-store';
 import { useSession } from '@/sync/sync-context';
 
 
+import { AssistantHeaderBadge, AssistantHeaderLabel } from '@/components/assistants/AssistantHeaderParts';
 import { MobileSessionMetadataButton } from './MobileSessionMetadata';
 import { MobileSessionSwitcher } from './MobileSessionSwitcher';
 
@@ -100,6 +101,9 @@ export const MobileHeader: React.FC<{
             <Icon name="list-unordered" className="size-5" />
           </button>
 
+          {/* Assistants fork: a work session links back to its assistant. */}
+          {runOverviewKey ? null : <AssistantHeaderBadge sessionId={currentSessionId} />}
+
           {/* Session title doubles as the recent-sessions switcher trigger. */}
           <button
             ref={titleRef}
@@ -115,7 +119,11 @@ export const MobileHeader: React.FC<{
             style={{ touchAction: 'manipulation' }}
           >
             <span className="flex min-w-0 items-center gap-1">
-              <span dir="auto" className="block min-w-0 truncate oc-ui-start-align typography-ui-label text-foreground">{primaryLabel}</span>
+              <AssistantHeaderLabel
+                sessionId={runOverviewKey ? null : currentSessionId}
+                title={primaryLabel}
+                fallback={<span dir="auto" className="block min-w-0 truncate oc-ui-start-align typography-ui-label text-foreground">{primaryLabel}</span>}
+              />
               {/* Discoverability: the chevron marks the title as a disclosure
                   trigger and flips while the switcher is open. */}
               <Icon
