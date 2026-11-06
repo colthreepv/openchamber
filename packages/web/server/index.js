@@ -102,6 +102,8 @@ import { createTrackerSessionStatus } from './lib/trackers/session-status.js';
 import { sourceControlProviderDescriptors } from './lib/source-control/provider-descriptors.js';
 import { createSessionKnowledgeRuntime } from './lib/session-knowledge/runtime.js';
 import { createMessageSearchRuntime } from './lib/message-search/runtime.js';
+import { createAssistantMemoryRuntime } from './lib/assistant-memory/runtime.js';
+import { listAssistantMemorySessions, resolveAssistantMemoryScope } from './lib/openchamber-control/assistant-memory.js';
 import { createScheduledTasksRuntime } from './lib/scheduled-tasks/runtime.js';
 import { resolveSessionDefaults } from './lib/scheduled-tasks/session-defaults.js';
 import { createChatsScope } from './lib/scheduled-tasks/chats-scope.js';
@@ -1394,15 +1396,24 @@ globalMessageStreamHub.subscribeStatus((status) => {
 // Full-text search over this server's conversations (user messages and agent
 // replies). Opt-in: off by default, and off means idle. The index is derived
 // data in the data dir, fed from the same event stream; see lib/message-search.
+let assistantMemoryRuntime = null;
 const messageSearchRuntime = createMessageSearchRuntime({
   dataDir: OPENCHAMBER_DATA_DIR,
   buildOpenCodeUrl,
   getOpenCodeAuthHeaders,
   globalEventHub: globalMessageStreamHub,
+  onSessionSynced: (session) => assistantMemoryRuntime?.schedule(session),
   readSettings: async () => {
     const settings = await readSettingsFromDisk();
     return { enabled: settings.messageSearchEnabled === true, reasoning: settings.messageSearchReasoningEnabled === true };
   },
+});
+
+assistantMemoryRuntime = createAssistantMemoryRuntime({
+  dataDir: OPENCHAMBER_DATA_DIR,
+  messageSearch: messageSearchRuntime,
+  readSettings: () => readSettingsFromDiskMigrated(),
+  isTreeOwner: async (id) => resolveAssistantMemoryScope(await listAssistantMemorySessions(openCodeSessionClient()), id).assistantSessionId === id,
 });
 
 const openCodeWatcherRuntime = createOpenCodeWatcherRuntime({
@@ -2107,6 +2118,7 @@ const insideSpaceTaskNaming = process.env.OPENCHAMBER_SPACE_TASK_TITLE_FILE && p
 
 const openChamberControlService = createOpenChamberControlService({
   messageSearch: messageSearchRuntime,
+  memoryTree: assistantMemoryRuntime,
   chatsScope: scheduledChatsScope,
   readSettingsFromDiskMigrated,
   sanitizeProjects,
@@ -2275,6 +2287,7 @@ const gracefulShutdownRuntime = createGracefulShutdownRuntime({
   dispatchResultsRuntime,
   workflowRuntime,
   messageSearchRuntime,
+  assistantMemoryRuntime,
   sessionRuntime,
   getHealthCheckInterval: () => healthCheckInterval,
   clearHealthCheckInterval: (value) => clearInterval(value),
@@ -2338,6 +2351,7 @@ async function main(options = {}) {
     instanceDir,
     env: process.env,
     executeAction: (...args) => openChamberControlService.execute(...args),
+    memoryCheckpoint: (sessionID, coverage) => openChamberControlService.memoryCheckpoint(sessionID, coverage),
     // A v2 tool call carries no directory, only the session it runs in.
     resolveSessionDirectory: (sessionID) => openChamberControlService.resolveSessionDirectory(sessionID),
     getActivePort: () => {

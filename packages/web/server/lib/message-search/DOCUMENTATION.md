@@ -103,6 +103,14 @@ a target whose opening user turn is not indexed. The runtime exposes this
 as `zoom`; neither operation calls OpenCode. The assistant memory action
 owns authorization and translates snippet markers for the model.
 
+The assistant summary builder reads ordered non-reasoning rows through
+`memoryMessages`, using those same exchange boundaries. The runtime returns
+null until the session has a completed sync, including after a reset or
+schema rebuild, so partial index contents cannot invalidate durable summaries.
+`onSessionSynced` schedules canonical assistant builds after successful reads
+and for already-current sessions on reconnect, resuming a pending tree batch.
+Tree ownership and cost limits are in `../assistant-memory/DOCUMENTATION.md`.
+
 Indexer status includes failed-session count and session-list failure, so a
 completed walk with failed reads cannot claim complete recall. A successful
 retry clears that session's failure; a complete list clears the list failure.

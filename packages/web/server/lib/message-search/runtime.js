@@ -38,6 +38,7 @@ export const createMessageSearchRuntime = ({
   // () => Promise<{ enabled: boolean, reasoning: boolean }>, from settings.json.
   readSettings,
   logger = console,
+  onSessionSynced = () => {},
 }) => {
   const indexPath = path.join(dataDir, INDEX_FILE);
   const open = loadSqliteOpener();
@@ -83,7 +84,7 @@ export const createMessageSearchRuntime = ({
   const startEngine = () => {
     const store = openMessageSearchStore(open(indexPath));
     reconcileReasoning(store);
-    const indexer = createMessageSearchIndexer({ store, createClient, includeReasoning: () => reasoning, logger });
+    const indexer = createMessageSearchIndexer({ store, createClient, includeReasoning: () => reasoning, logger, onSessionSynced });
     const unsubscribeEvents = globalEventHub.subscribeEvent((event) => {
       const envelope = envelopeSchema.safeParse(event);
       const directory = envelope.success && envelope.data.directory !== 'global' ? envelope.data.directory ?? '' : '';
@@ -223,6 +224,11 @@ export const createMessageSearchRuntime = ({
       messages: engine.store.exchange({ sessionId, messageId }),
       index: engine.indexer.status(),
     } : null,
+
+    // A rebuild/reset is partial until that session's sync finishes. Paid
+    // summaries must not be invalidated against the temporary empty index.
+    memoryMessages: (sessionId) => engine && engine.store.readSession(sessionId)?.synced_updated_at != null
+      ? engine.store.memoryMessages(sessionId) : null,
 
     /** What the Settings page shows; the counts exist only while the index is open. */
     status: async () => {

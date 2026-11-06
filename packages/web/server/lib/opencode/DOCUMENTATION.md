@@ -3,6 +3,14 @@
 ## Purpose
 This module provides OpenCode server integration utilities for the web server runtime, including configuration management and provider authentication.
 
+Server-only assistant memory settings are instance-scoped:
+`assistantMemoryTreeEnabled` defaults on under message-search and memory-tool
+gates, `assistantMemoryModel` selects `providerID/modelID`, and
+`assistantMemoryVariant` selects the explicit model's thinking variant, default
+high. They have no Settings UI. The graceful shutdown runtime aborts and drains
+tree generation before stopping the message-search source. The owning contract
+is `../assistant-memory/DOCUMENTATION.md`.
+
 Diagnostic logging for the timeline export (`proxy.js` error lines, the lifecycle journal, the local diagnostics route in `core-routes.js`) is described in `../diagnostics/DOCUMENTATION.md`.
 
 ## Entrypoints and structure

@@ -229,6 +229,7 @@ export const createOpenChamberControlService = (dependencies) => {
     notifyUser = null,
     agentMemoryActions = null,
     messageSearch = null,
+    memoryTree = null,
     sessionLinks = null,
     // Git and metadata access for `work.name`; absent means the server cannot name tasks.
     workNaming = null,
@@ -357,7 +358,7 @@ export const createOpenChamberControlService = (dependencies) => {
     return sessionService.resolveDirectory({ projectId: projectID });
   };
 
-  const assistantMemoryActions = createAssistantMemoryActions({ getClient, messageSearch, readSettings: readSettingsFromDiskMigrated });
+  const assistantMemoryActions = createAssistantMemoryActions({ getClient, messageSearch, memoryTree, readSettings: readSettingsFromDiskMigrated });
   const knowledgeActions = createProjectKnowledgeActions({
     projectContextRuntime,
     resolveProjectContextId,
@@ -1158,5 +1159,10 @@ export const createOpenChamberControlService = (dependencies) => {
   // id and the directory is resolved here, where it is authoritative.
   // `answerPage` is the chat's side of a page that waits (render.page with
   // awaitAnswer), `answerSecret` the chat's side of a secret.request card.
-  return { execute, resolveSessionDirectory, answerPage: pageAnswers.answer, answerSecret: secretRequests.answer };
+  const memoryCheckpoint = async (sessionID, coverage) => {
+    if (!memoryTree || !asNonEmptyString(sessionID)) return null;
+    const client = await getClient();
+    return memoryTree.checkpoint(await client.session.get({ sessionID }), coverage);
+  };
+  return { execute, resolveSessionDirectory, memoryCheckpoint, answerPage: pageAnswers.answer, answerSecret: secretRequests.answer };
 };

@@ -902,6 +902,10 @@ export const createSettingsHelpers = (dependencies) => {
     if (typeof candidate.agentMemoryToolEnabled === 'boolean') {
       result.agentMemoryToolEnabled = candidate.agentMemoryToolEnabled;
     }
+    if (candidate.assistantMemoryTreeEnabled === true || candidate.assistantMemoryTreeEnabled === false) result.assistantMemoryTreeEnabled = candidate.assistantMemoryTreeEnabled;
+    for (const key of ['assistantMemoryModel', 'assistantMemoryVariant']) {
+      if (candidate[key] !== undefined) result[key] = asNonEmptyString(candidate[key]) ?? undefined;
+    }
     if (candidate.agentKnowledgeToolEnabled === true || candidate.agentKnowledgeToolEnabled === false) {
       result.agentKnowledgeToolEnabled = candidate.agentKnowledgeToolEnabled;
     }

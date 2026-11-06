@@ -37,6 +37,30 @@ for recall; it lives in `MEMORY_TOOL_DESCRIPTION`
 (`packages/web/server/lib/agent-tool/runtime.js`). Design and plan:
 [issue #2](https://github.com/colthreepv/openchamber/issues/2).
 
+Canonical conversations also build a persistent summary tree in
+`assistant-memory.sqlite`, separate from the rebuildable search index.
+The managed OpenCode compaction hook inserts a tree view with zoomable
+`nodeId` pointers. It preserves OpenCode's verbatim tail and falls back to
+native compaction when memory is unavailable or incomplete. Work sessions
+remain searchable but do not build trees.
+
+Tool-bearing and unfinished current turns keep native compaction, because
+their working state is outside the text index. Only the oldest canonical
+session per assistant directory owns a tree; duplicate markers use native
+compaction so checkpoint node IDs and zoom keep the same owner.
+
+Building can spend model tokens after message search is enabled. The server
+uses at most 1 build at a time, with batches of up to 32 nodes, 1 call per
+batch plus at most 1 shortening retry, and a 60-second pause for pending work
+or failures. Short exchanges cost no model call. Server-side settings have no
+UI: `assistantMemoryTreeEnabled: false` disables building and the hook;
+`assistantMemoryModel: "providerID/modelID"` and
+`assistantMemoryVariant: "high"` select the compactor. Without an override,
+Haiku 5.5 on the session's provider is preferred when listed, followed by
+Small Model resolution. No background call selects another connected
+provider unless the user explicitly configured it through the model or
+Small Model settings. The hot profile/open-loop layer is not implemented.
+
 ## Build and preview
 
 ```powershell

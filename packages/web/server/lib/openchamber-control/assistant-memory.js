@@ -36,12 +36,30 @@ const inputSchema = z.object({
   since: z.number().int().nonnegative().optional(), until: z.number().int().nonnegative().optional(),
   limit: z.number().int().positive().optional(),
   sessionId: z.string().trim().min(1).optional(), messageId: z.string().trim().min(1).optional(),
+  nodeId: z.string().trim().max(64).optional(),
 });
 const SEARCH_OFF = 'Memory search is off or unavailable. The user can enable message search in Settings → Chat.';
 const progress = (index) => index?.backfill?.state === 'done' && !index.failures && !index.listFailed
   ? {} : { warning: 'The index is backfilling, unfinished, or has failed reads. Results may be incomplete.' };
 
-export const createAssistantMemoryActions = ({ getClient, messageSearch, readSettings }) => ({
+export const listAssistantMemorySessions = async (client) => {
+  const sessions = [];
+  const seen = new Set();
+  let cursor;
+  for (;;) {
+    const input = { parentID: null, limit: 200 };
+    if (cursor) input.cursor = cursor;
+    const page = pageSchema.parse(await client.session.list(input));
+    sessions.push(...page.data);
+    const next = page.cursor?.next;
+    if (!next) return sessions;
+    if (seen.has(next)) fail('Could not resolve assistant scope: session pagination repeated.', 503);
+    seen.add(next);
+    cursor = next;
+  }
+};
+
+export const createAssistantMemoryActions = ({ getClient, messageSearch, readSettings, memoryTree }) => ({
   async execute(action, rawInput, callerId) {
     const settings = await readSettings();
     if (settings.agentMemoryToolEnabled === false) fail('The memory tool is disabled in Settings.', 403);
@@ -53,20 +71,7 @@ export const createAssistantMemoryActions = ({ getClient, messageSearch, readSet
     const input = parsed.data;
     if (input.since !== undefined && input.until !== undefined && input.since > input.until) fail('since must be at or before until');
     const client = await getClient();
-    const sessions = [];
-    const seen = new Set();
-    let cursor;
-    for (;;) {
-      const listInput = { parentID: null, limit: 200 };
-      if (cursor) listInput.cursor = cursor;
-      const page = pageSchema.parse(await client.session.list(listInput));
-      sessions.push(...page.data);
-      const next = page.cursor?.next;
-      if (!next) break;
-      if (seen.has(next)) fail('Could not resolve assistant scope: session pagination repeated.', 503);
-      seen.add(next);
-      cursor = next;
-    }
+    const sessions = await listAssistantMemorySessions(client);
     const scope = resolveAssistantMemoryScope(sessions, callerId);
     if (action === 'memory.recall') {
       if (!input.query) fail('recall requires query');
@@ -75,7 +80,14 @@ export const createAssistantMemoryActions = ({ getClient, messageSearch, readSet
       if (result.status === 'query-too-short') fail('query-too-short: use at least one word of 3 or more characters.');
       return { assistantSessionId: scope.assistantSessionId, status: result.status, hits: result.hits.map((hit) => ({ ...hit, snippet: hit.snippet.replaceAll(MATCH_START, '«').replaceAll(MATCH_END, '»') })), ...progress(result.index) };
     }
-    if (!input.sessionId || !input.messageId) fail('zoom requires sessionId and messageId from a recall hit');
+    if (input.nodeId) {
+      const target = await memoryTree?.zoom(scope.assistantSessionId, input.nodeId);
+      if (!target) fail('The memory node is unavailable. Use recall to find the exchange.', 404);
+      if (target.children) return { assistantSessionId: scope.assistantSessionId, ...target };
+      input.sessionId = scope.assistantSessionId;
+      input.messageId = target.messageId;
+    }
+    if (!input.sessionId || !input.messageId) fail('zoom requires nodeId or sessionId and messageId from a recall hit');
     if (!scope.sessionIds.includes(input.sessionId)) fail('The zoom target is outside this assistant\'s memory scope.', 403);
     const result = messageSearch.zoom(input);
     if (!result) fail(SEARCH_OFF, 503);

@@ -4,6 +4,10 @@ This document describes backend runtime modules used by the VS Code extension br
 
 ## Purpose
 
+The generated settings registry includes the server-only assistant memory
+tree switch, model and variant. VS Code preserves these instance fields but
+does not run the server's tree builder or managed compaction hook.
+
 Keep `bridge.ts` as a thin orchestration layer that delegates message handling to cohesive domain runtimes while preserving API behavior.
 
 ## Runtime modules

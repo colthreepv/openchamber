@@ -207,6 +207,7 @@ const MEMORY_PARAMETER_PROPERTIES = {
   limit: { type: 'integer', description: 'Recall hits, default 10, capped at 50' },
   sessionId: { type: 'string', description: 'From recall, for zoom' },
   messageId: { type: 'string', description: 'From recall, for zoom' },
+  nodeId: { type: 'string', description: 'From a memory checkpoint or zoom; opens children or the exchange' },
 };
 
 // Its own names, not the shared map: `title`, `body` and `text` mean something
@@ -343,7 +344,7 @@ const SCHEDULE_TOOL_DESCRIPTION = "Scheduled tasks: prompts OpenChamber runs on 
 
 const WEB_TOOL_DESCRIPTION = "OpenChamber's browser panel, to check your work by looking at it. One action per call: open, snapshot for text, selectors and errors, then click, type, select or scroll by those selectors. Close tabs you opened for your own work with browser.close; leave open the ones you opened to show the user something. The page runs with the user's real logins; treat it as their live session.";
 
-const MEMORY_TOOL_DESCRIPTION = "Recall past conversations when the user refers to something outside visible context. Search before asking them to repeat: try 2-3 query variants in Italian and English, synonyms and exact technical names, with words of at least 3 characters. Verify a hit with zoom before relying on it; the most recent mention wins. Recall and zoom cover only this assistant's canonical conversation and its work sessions. "
+const MEMORY_TOOL_DESCRIPTION = "Recall past conversations when the user refers to something outside visible context. Search before asking them to repeat: try 2-3 query variants in Italian and English, synonyms and exact technical names, with words of at least 3 characters. Verify a hit with zoom before relying on it; the most recent mention wins. Recall and zoom cover only this assistant's canonical conversation and its work sessions. Zoom takes nodeId from a checkpoint or sessionId + messageId from recall. "
   + "Memory that persists across sessions. One fact per entry, under a title that names what it holds, so the session index tells when to read it: \"Session row menu is full: no new items\", not \"Sidebar decisions\". Save what code and docs do not show: a decision and its reason, a rejected alternative, a deliberate \"leave this as it is\", the user's corrections and preferences, a hard-won pointer. Never one-off task state, secrets or credentials, or what the user asked you not to keep; what the user explicitly asks you to remember, save. Project scope holds what concerns this project, global what concerns the user in every project.";
 
 const KNOWLEDGE_TOOL_DESCRIPTION = "The project's Notes, Todos and Plans, shown in OpenChamber's Project knowledge panel and shared by its sessions. One action per call; list returns everything unless planId or ready narrows it. "
@@ -825,6 +826,32 @@ export default {
   id: ${JSON.stringify(PLUGIN_ID)},
   setup: async (ctx) => {
     exemptCallbackFromProxy()
+    await ctx.session.hook("compaction", async (event) => {
+      try {
+        // Tool state and unfinished replies are outside the text index. Let
+        // native compaction preserve them until a complete text turn exists.
+        const messages = event.messages ?? []
+        const lastUser = messages.findLastIndex((message) => message.role === "user")
+        const turn = messages.slice(lastUser)
+        if (lastUser < 0 || turn.at(-1)?.role !== "assistant") return
+        if (turn.some((message) => Array.isArray(message.content) && message.content.some((part) => part.type === "tool-call" || part.type === "tool-result"))) return
+        const userId = turn[0].id
+        const replyId = turn.at(-1).id
+        if (!userId || !replyId) return
+        const endpoint = process.env.OPENCHAMBER_AGENT_TOOL_URL
+        const token = process.env.OPENCHAMBER_AGENT_TOOL_TOKEN
+        if (!endpoint || !token) return
+        const response = await fetch(endpoint + "/memory-checkpoint", {
+          method: "POST",
+          headers: { "content-type": "application/json", authorization: "Bearer " + token },
+          body: JSON.stringify({ sessionID: event.sessionID, userId, replyId }),
+          signal: AbortSignal.timeout(5000),
+        })
+        if (!response.ok) return
+        const result = await response.json()
+        if (typeof result?.summary === "string" && result.summary.trim()) event.result = { summary: result.summary }
+      } catch { /* Fail open to OpenCode's own compaction, including its verbatim tail. */ }
+    })
     await ctx.tool.transform((tools) => {
 ${entries.join('')}    })${includeRender || includeSecret ? `
     await ctx.session.hook("prompt", (event) => {
@@ -998,6 +1025,13 @@ export const createAgentToolRuntime = (dependencies) => {
   };
 
   const registerRoutes = (app, express) => {
+    app.post('/api/openchamber/agent-tool/memory-checkpoint', express.json({ limit: '4kb' }), async (req, res) => {
+      if (!authorize(req)) return res.status(401).json({ error: 'Unauthorized' });
+      try {
+        const result = await dependencies.memoryCheckpoint?.(req.body?.sessionID, { userId: req.body?.userId, replyId: req.body?.replyId });
+        return res.json(result ?? {});
+      } catch { return res.json({}); }
+    });
     app.post('/api/openchamber/agent-tool', express.json({ limit: '1mb' }), async (req, res) => {
       if (!authorize(req)) return res.status(401).json({ error: 'Unauthorized' });
       const controller = new AbortController();

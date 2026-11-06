@@ -294,6 +294,11 @@ export const openMessageSearchStore = (connection) => {
       );
     },
 
+    memoryMessages: (sessionId) => connection.all(
+      "SELECT message_id AS id, session_id AS sessionId, role, created_at AS createdAt, text FROM messages WHERE session_id = ? AND role <> 'reasoning' ORDER BY created_at, id",
+      [sessionId],
+    ),
+
     /** The indexed user turn and settled replies, excluding reasoning. */
     exchange: ({ sessionId, messageId }) => {
       const target = connection.get("SELECT created_at, id FROM messages WHERE session_id = ? AND message_id = ? AND role <> 'reasoning'", [sessionId, messageId]);
