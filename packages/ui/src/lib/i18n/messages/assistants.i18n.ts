@@ -1,5 +1,9 @@
 export const assistantsI18n = {
   "en": {
+    "assistants.messagePlaceholder": "Message {name}…",
+    "assistants.starterToday": "What's on today?",
+    "assistants.starterRemind": "Remind me…",
+    "assistants.starterContinue": "Pick up where we left off",
     "assistants.title": "Assistants",
     "assistants.new": "New assistant",
     "assistants.search": "Search assistants",
@@ -41,6 +45,10 @@ export const assistantsI18n = {
     "assistants.by": "by {name}"
   },
   "de": {
+    "assistants.messagePlaceholder": "Nachricht an {name}…",
+    "assistants.starterToday": "Was steht heute an?",
+    "assistants.starterRemind": "Erinnere mich…",
+    "assistants.starterContinue": "Wo waren wir stehen geblieben?",
     "assistants.title": "Assistenten",
     "assistants.new": "Neuer Assistent",
     "assistants.search": "Assistenten suchen",
@@ -82,6 +90,10 @@ export const assistantsI18n = {
     "assistants.by": "von {name}"
   },
   "es": {
+    "assistants.messagePlaceholder": "Mensaje a {name}…",
+    "assistants.starterToday": "¿Qué hay para hoy?",
+    "assistants.starterRemind": "Recuérdame…",
+    "assistants.starterContinue": "Sigamos donde lo dejamos",
     "assistants.title": "Asistentes",
     "assistants.new": "Nuevo asistente",
     "assistants.search": "Buscar asistentes",
@@ -123,6 +135,10 @@ export const assistantsI18n = {
     "assistants.by": "por {name}"
   },
   "fr": {
+    "assistants.messagePlaceholder": "Message à {name}…",
+    "assistants.starterToday": "Quoi de prévu aujourd’hui ?",
+    "assistants.starterRemind": "Rappelle-moi…",
+    "assistants.starterContinue": "Reprenons où nous en étions",
     "assistants.title": "Assistants",
     "assistants.new": "Nouvel assistant",
     "assistants.search": "Rechercher des assistants",
@@ -164,6 +180,10 @@ export const assistantsI18n = {
     "assistants.by": "par {name}"
   },
   "nl": {
+    "assistants.messagePlaceholder": "Bericht aan {name}…",
+    "assistants.starterToday": "Wat staat er vandaag op de planning?",
+    "assistants.starterRemind": "Herinner me…",
+    "assistants.starterContinue": "Ga verder waar we gebleven waren",
     "assistants.title": "Assistenten",
     "assistants.new": "Nieuwe assistent",
     "assistants.search": "Assistenten zoeken",
@@ -205,6 +225,10 @@ export const assistantsI18n = {
     "assistants.by": "door {name}"
   },
   "ja": {
+    "assistants.messagePlaceholder": "{name}にメッセージ…",
+    "assistants.starterToday": "今日の予定は？",
+    "assistants.starterRemind": "リマインドして…",
+    "assistants.starterContinue": "前回の続きをしよう",
     "assistants.title": "アシスタント",
     "assistants.new": "新しいアシスタント",
     "assistants.search": "アシスタントを検索",
@@ -246,6 +270,10 @@ export const assistantsI18n = {
     "assistants.by": "作成者: {name}"
   },
   "ko": {
+    "assistants.messagePlaceholder": "{name}에게 메시지…",
+    "assistants.starterToday": "오늘 일정은?",
+    "assistants.starterRemind": "알려줘…",
+    "assistants.starterContinue": "지난번에 이어서",
     "assistants.title": "어시스턴트",
     "assistants.new": "새 어시스턴트",
     "assistants.search": "어시스턴트 검색",
@@ -287,6 +315,10 @@ export const assistantsI18n = {
     "assistants.by": "작성자: {name}"
   },
   "pl": {
+    "assistants.messagePlaceholder": "Wiadomość do {name}…",
+    "assistants.starterToday": "Co dziś w planach?",
+    "assistants.starterRemind": "Przypomnij mi…",
+    "assistants.starterContinue": "Wróćmy do poprzedniej rozmowy",
     "assistants.title": "Asystenci",
     "assistants.new": "Nowy asystent",
     "assistants.search": "Szukaj asystentów",
@@ -328,6 +360,10 @@ export const assistantsI18n = {
     "assistants.by": "autor: {name}"
   },
   "pt-BR": {
+    "assistants.messagePlaceholder": "Mensagem para {name}…",
+    "assistants.starterToday": "O que temos para hoje?",
+    "assistants.starterRemind": "Me lembre…",
+    "assistants.starterContinue": "Continue de onde paramos",
     "assistants.title": "Assistentes",
     "assistants.new": "Novo assistente",
     "assistants.search": "Buscar assistentes",
@@ -369,6 +405,10 @@ export const assistantsI18n = {
     "assistants.by": "por {name}"
   },
   "uk": {
+    "assistants.messagePlaceholder": "Повідомлення для {name}…",
+    "assistants.starterToday": "Що сьогодні заплановано?",
+    "assistants.starterRemind": "Нагадай мені…",
+    "assistants.starterContinue": "Продовжимо з того місця",
     "assistants.title": "Асистенти",
     "assistants.new": "Новий асистент",
     "assistants.search": "Пошук асистентів",
@@ -410,6 +450,10 @@ export const assistantsI18n = {
     "assistants.by": "автор: {name}"
   },
   "zh-CN": {
+    "assistants.messagePlaceholder": "给{name}发消息…",
+    "assistants.starterToday": "今天有什么安排？",
+    "assistants.starterRemind": "提醒我…",
+    "assistants.starterContinue": "接着上次继续",
     "assistants.title": "助手",
     "assistants.new": "新建助手",
     "assistants.search": "搜索助手",
@@ -451,6 +495,10 @@ export const assistantsI18n = {
     "assistants.by": "来自 {name}"
   },
   "zh-TW": {
+    "assistants.messagePlaceholder": "傳訊息給{name}…",
+    "assistants.starterToday": "今天有什麼安排？",
+    "assistants.starterRemind": "提醒我…",
+    "assistants.starterContinue": "接續上次的內容",
     "assistants.title": "助理",
     "assistants.new": "新增助理",
     "assistants.search": "搜尋助理",
@@ -492,6 +540,10 @@ export const assistantsI18n = {
     "assistants.by": "來自 {name}"
   },
   "tr": {
+    "assistants.messagePlaceholder": "{name} için mesaj…",
+    "assistants.starterToday": "Bugün neler var?",
+    "assistants.starterRemind": "Bana hatırlat…",
+    "assistants.starterContinue": "Kaldığımız yerden devam edelim",
     "assistants.title": "Asistanlar",
     "assistants.new": "Yeni asistan",
     "assistants.search": "Asistanlarda ara",
@@ -533,6 +585,10 @@ export const assistantsI18n = {
     "assistants.by": "oluşturan: {name}"
   },
   "ar": {
+    "assistants.messagePlaceholder": "رسالة إلى {name}…",
+    "assistants.starterToday": "ما جدول اليوم؟",
+    "assistants.starterRemind": "ذكّرني…",
+    "assistants.starterContinue": "لنكمل من حيث توقفنا",
     "assistants.title": "المساعدون",
     "assistants.new": "مساعد جديد",
     "assistants.search": "البحث عن مساعدين",
@@ -574,6 +630,10 @@ export const assistantsI18n = {
     "assistants.by": "بواسطة {name}"
   },
   "he": {
+    "assistants.messagePlaceholder": "הודעה אל {name}…",
+    "assistants.starterToday": "מה בתכנון להיום?",
+    "assistants.starterRemind": "להזכיר לי…",
+    "assistants.starterContinue": "נמשיך מאיפה שעצרנו",
     "assistants.title": "עוזרים",
     "assistants.new": "עוזר חדש",
     "assistants.search": "חיפוש עוזרים",

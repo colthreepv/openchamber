@@ -25,6 +25,7 @@ stock sidebar; the assistant navigation is not mounted there.
   loading.
 - Navigation defaults to the connected server's `ui.assistants.v1` capability. While loading or on failure, retain the last successful in-memory value for that runtime, or use stock navigation if none exists.
 - `?assistants=on|off` stores an override for the current runtime only. The old global key is ignored. Transient runtimes do not persist overrides.
+- Landing remembers the canonical assistant project per runtime. With no explicit session route, use that project or the first registered assistant. Drafts targeting an assistant workspace with a canonical session return to it; missing conversations remain available through the sidebar's start-conversation action.
 
 ## Decisions
 

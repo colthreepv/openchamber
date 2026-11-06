@@ -1,4 +1,6 @@
 import { OPENCODE_TOOLS } from '@/lib/opencode/tools';
+import { useAssistantNavigation } from '@/lib/assistants/assistantsMode';
+import { useAssistantForSession } from '@/stores/useAssistantStore';
 import React from 'react';
 import { useChatColumnActions, useChatSessionSelection } from './chatColumnSession';
 import { MobileModelButton } from './MobileModelButton';
@@ -401,6 +403,10 @@ export const ModelControls: React.FC<ModelControlsProps> = ({
     rememberVariantPicks = true,
 }) => {
     const { t } = useI18n();
+    const assistantsEnabled = useAssistantNavigation();
+    const selectedSessionId = useSessionUIStore((state) => state.currentSessionId);
+    const assistantOwner = useAssistantForSession(assistantsEnabled ? (controlledSessionId ?? selectedSessionId) : null);
+    const hideAssistantAgent = Boolean(assistantOwner?.isCanonical);
     const { focusInput: focusColumnInput } = useChatColumnActions();
     // A controlled picker (a chat pinned in the side panel, a BTW fork) lists
     // the catalog of its own session's folder, which can be another one than
@@ -3043,7 +3049,7 @@ export const ModelControls: React.FC<ModelControlsProps> = ({
                         {renderModelSelector()}
                         {renderVariantSelector()}
                     </div>
-                    {(!selection || agentSelectable) && !isAutoSelected && renderAgentSelector()}
+                    {!hideAssistantAgent && (!selection || agentSelectable) && !isAutoSelected && renderAgentSelector()}
                 </div>
             </div>
 

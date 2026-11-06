@@ -18,6 +18,10 @@ import {
 } from './chatColumnSession';
 import { MobileCommentComposerContext, useMobileCommentComposerOwner } from './composer/comment/MobileCommentComposerContext';
 import { DraftPresetChips } from './DraftPresetChips';
+import { useAssistantLanding } from '@/lib/assistants/useAssistantLanding';
+import { useAssistantNavigation } from '@/lib/assistants/assistantsMode';
+import { useAssistantForSession } from '@/stores/useAssistantStore';
+import { AssistantWelcome } from '@/components/assistants/AssistantWelcome';
 import { useInputStore } from '@/sync/input-store';
 import { useConfigStore } from '@/stores/useConfigStore';
 import { useUIStore } from '@/stores/useUIStore';
@@ -838,6 +842,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 }) => {
     const pinned = pinnedSession !== undefined;
     const autoOpenDraft = autoOpenDraftProp && !pinned;
+    useAssistantLanding(!pinned && active);
+    const assistantsEnabled = useAssistantNavigation();
     const { t } = useI18n();
     // A pinned column starts on its session and moves only through its own
     // navigation. A different session from the owner starts it over.
@@ -895,6 +901,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     }
     const targetSelection = holdPreviousTimeline ? shownSelectionRef.current : liveSelection;
     const { sessionId: currentSessionId, directory: currentSessionDirectory } = useShownSessionSelection(targetSelection);
+    const assistantOwner = useAssistantForSession(assistantsEnabled ? currentSessionId : null);
     shownSelectionRef.current = { sessionId: currentSessionId, directory: currentSessionDirectory };
     const revealWaited = Boolean(currentSessionId) && currentSessionId === waitedSessionIdRef.current;
 
@@ -1873,6 +1880,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         }
 
         if (sessionMessages.length === 0 && !sessionIsWorking) {
+            if (assistantOwner?.isCanonical) return <AssistantWelcome assistant={assistantOwner.assistant} />;
             return (
                 <div
                     className={cn(

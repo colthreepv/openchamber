@@ -130,6 +130,8 @@ import { trackerReferenceSource, type TrackerReferenceSource } from '@/component
 import type { ComposerTrackerPicker } from './composer/ui/ComposerAttachmentControls';
 import { Icon } from "@/components/icon/Icon";
 import { DraftPresetChips } from './DraftPresetChips';
+import { useAssistantNavigation } from '@/lib/assistants/assistantsMode';
+import { useAssistantForSession } from '@/stores/useAssistantStore';
 import type { ResolvedStarter } from './useDraftStarters';
 import { useChatSearchDirectory } from '@/hooks/useChatSearchDirectory';
 import { useGuestAttachItems, useGuestCommands } from '@/hooks/useGuestSurfaces';
@@ -567,6 +569,9 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
     // showing (see chatColumnSession.ts); elsewhere it follows the live one.
     const liveSessionId = useSessionUIStore((s) => (chatColumnSession ? null : s.currentSessionId));
     const currentSessionId = chatColumnSession ? chatColumnSession.sessionId : liveSessionId;
+    const assistantsEnabled = useAssistantNavigation();
+    const assistantOwner = useAssistantForSession(assistantsEnabled ? currentSessionId : null);
+    const assistantName = assistantOwner?.isCanonical ? assistantOwner.assistant.name : null;
     React.useEffect(() => {
         if (inputModeParentRef.current !== null && inputModeParentRef.current !== currentSessionId) {
             setInputMode('normal');
@@ -4672,11 +4677,11 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
                 <MemoMobileModelButton onOpenModel={() => handleOpenMobilePanel('model')} className="min-w-0 px-0" />
                 <MemoMobileEffortButton onCycleThinking={handleCycleThinking} onOpenThinking={handleOpenThinkingPanel} />
             </div>
-            <MemoMobileAgentButton
+            {!assistantName && <MemoMobileAgentButton
                 onOpenAgentPanel={handleOpenAgentPanel}
                 onCycleAgent={handleCycleAgent}
                 className="flex-shrink-0 px-0"
-            />
+            />}
         </div>
     ) : null;
 
@@ -4935,6 +4940,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
                             </div>
                         )}
                         bottomRow={mobileModelAgentRow}
+                        placeholder={assistantName ? t('assistants.messagePlaceholder', { name: assistantName }) : undefined}
                         onExpand={mobileShell.expand}
                         onPrimaryAction={handlePrimaryAction}
                         onPickLocalFiles={handlePickLocalFiles}
@@ -5116,7 +5122,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
                                     : currentSessionId || newSessionDraftOpen
                                         ? inputMode === 'shell'
                                             ? t('chat.chatInput.placeholder.shell')
-                                            : t(useCompactChatPlaceholder ? 'chat.chatInput.placeholder.chatCompact' : 'chat.chatInput.placeholder.chat')
+                                            : assistantName ? t('assistants.messagePlaceholder', { name: assistantName }) : t(useCompactChatPlaceholder ? 'chat.chatInput.placeholder.chatCompact' : 'chat.chatInput.placeholder.chat')
                                         : t('chat.chatInput.placeholder.selectSession')}
                                 editable={Boolean(currentSessionId || newSessionDraftOpen)}
                                 autoCorrect={composerAutoCorrect({ isMobile })}

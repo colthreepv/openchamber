@@ -11,6 +11,9 @@ The sidebar groups work by `metadata.openchamber.startedBy.sessionID`.
 See `packages/ui/src/lib/assistants/DOCUMENTATION.md` for the data contract.
 
 Assistant navigation defaults on when the connected server advertises `ui.assistants.v1`; otherwise it defaults off.
+Without a session link, the main chat opens the last assistant used on that
+runtime, falling back to the first registered assistant. A new-session draft
+in an assistant workspace returns to its canonical conversation.
 Open `?assistants=off` to return to stock navigation for that server; use
 `?assistants=on` to restore it. Overrides are stored per runtime. VS Code keeps its stock sidebar.
 
