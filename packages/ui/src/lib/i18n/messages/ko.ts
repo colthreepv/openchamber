@@ -1,3 +1,4 @@
+import { assistantsI18n } from './assistants.i18n';
 import type { I18nKey } from './en';
 import { settingsDict } from './ko.settings';
 import { linearIssuePickerI18n } from './linear-issue-picker.i18n';
@@ -51,6 +52,7 @@ import { sessionReferencesI18n } from './session-references.i18n';
 import { guestStatusViewI18n } from './guest-status-view.i18n';
 
 export const dict: Record<I18nKey, string> = {
+  ...assistantsI18n['ko'],
   'quota.family.zen': 'Zen 모델',
   'quota.value.requests': '요청: {count}',
   'quota.value.spent': '{spent} 사용',

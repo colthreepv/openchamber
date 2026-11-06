@@ -1,3 +1,4 @@
+import { assistantsI18n } from './assistants.i18n';
 import { settingsDict } from './he.settings';
 import { linearIssuePickerI18n } from './linear-issue-picker.i18n';
 import { referencePickerI18n } from './reference-picker.i18n';
@@ -50,6 +51,7 @@ import { sessionReferencesI18n } from './session-references.i18n';
 import { guestStatusViewI18n } from './guest-status-view.i18n';
 
 export const dict = {
+  ...assistantsI18n['he'],
   'quota.family.zen': 'מודלי Zen',
   'quota.value.requests': 'בקשות: {count}',
   'quota.value.spent': 'נוצלו {spent}',
