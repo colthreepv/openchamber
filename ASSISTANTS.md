@@ -19,7 +19,10 @@ Open `?assistants=off` to return to stock navigation for that server; use
 
 Create an assistant with its name, role, uploaded avatar and optional model.
 Its scratchpad lives under the server home at `assistants/<slug>`.
-Existing `AGENTS.md` files are preserved. A failed creation can leave a
+Creation writes no `AGENTS.md`. Identity is supplied only to the canonical
+session by the managed OpenCode context hook. Remove assistant identity text
+from existing scratchpad `AGENTS.md` files, including deployment-seeded files;
+retain unrelated workspace instructions. A failed creation can leave a
 registered workspace; open its assistant row to finish the canonical session.
 Do not delete a workspace to retry creation.
 
@@ -31,6 +34,7 @@ bun run build:web
 bun run check:changed -- --base v2.6.1
 node scripts/run-isolated-tests.mjs packages/ui/src/lib/assistants
 bun run --cwd packages/web test server/lib/openchamber-sessions/routes.test.js
+bun run --cwd packages/web test server/lib/assistants/prompt-plugin.test.js server/lib/opencode/managed-config-file.test.js server/lib/opencode/core-routes.test.js
 ```
 
 For a UI preview using an existing server on port 3799:
@@ -60,6 +64,14 @@ fork.
 Keep the assistant projection and components separate from upstream's session
 row model and grouping internals. The upstream mount points, headers and
 session-create metadata are the intentional integration points.
+
+The prompt and its managed hook live in `packages/web/server/lib/assistants/`.
+No deployment prompt template is needed. The server-wide startup switch
+`OPENCHAMBER_ASSISTANTS_ENABLED=false` disables both identity injection and
+assistant capability advertising. A browser's `?assistants=off` only changes
+navigation; scheduled messages still reach the canonical assistant identity.
+External OpenCode requires its own plugin installation and receives no managed
+hook automatically. See that module's `DOCUMENTATION.md` for the prompt contract.
 
 Canonical creation deduplicates concurrent clicks in one client. Concurrent
 creation across different clients is not serialized by the server.

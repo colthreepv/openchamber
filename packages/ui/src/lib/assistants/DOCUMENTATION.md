@@ -6,6 +6,9 @@ This module projects the project registry and global sessions into assistants.
 Each assistant owns a scratchpad directory and one canonical session. Its face,
 display name and default model use the existing project identity fields. The
 canonical session stores the role in `metadata.openchamber.assistant`.
+The managed server supplies its name and role to the session-bound prompt in
+`packages/web/server/lib/assistants/`. Creation writes no scratchpad `AGENTS.md`;
+deployments must remove assistant identity text from existing directory files.
 
 Web, Electron and hosted mobile use this navigation. Capacitor uses the same
 components after rebuilding its bundled UI. VS Code retains its workspace-scoped
@@ -25,6 +28,7 @@ stock sidebar; the assistant navigation is not mounted there.
   loading.
 - Navigation defaults to the connected server's `ui.assistants.v1` capability. While loading or on failure, retain the last successful in-memory value for that runtime, or use stock navigation if none exists.
 - `?assistants=on|off` stores an override for the current runtime only. The old global key is ignored. Transient runtimes do not persist overrides.
+- Navigation overrides do not remove canonical session identity. The server-wide startup switch `OPENCHAMBER_ASSISTANTS_ENABLED=false` disables identity injection and capability advertising together.
 - Landing remembers the canonical assistant project per runtime. With no explicit session route, use that project or the first registered assistant. Drafts targeting an assistant workspace with a canonical session return to it; missing conversations remain available through the sidebar's start-conversation action.
 
 ## Decisions

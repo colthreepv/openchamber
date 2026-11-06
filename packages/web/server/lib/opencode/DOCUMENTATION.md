@@ -1237,6 +1237,12 @@ under a running child.
   `OPENCODE_CONFIG_CONTENT` instead, and those installs keep the old behavior —
   a managed-tool toggle needs an OpenCode restart to take effect.
 
+### Assistant session prompt
+
+Assistant identity uses a separate managed context plugin under
+`../assistants/`. Its `DOCUMENTATION.md` defines canonical selection, feature
+gating and removal of directory-level assistant prompts.
+
 ### Session title prompt
 
 OpenCode names a new session with its hidden `title` agent. Its built-in prompt

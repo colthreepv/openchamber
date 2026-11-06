@@ -3,6 +3,7 @@ import { ThemeImportStorageError } from './theme-runtime.js';
 import { registerThemeCatalogRoutes } from './theme-catalog.js';
 import { collectLocalFileDiagnostics } from '../diagnostics/local-files.js';
 import { serverDiagnosticJournal } from '../diagnostics/server-journal.js';
+import { assistantsEnabled } from '../assistants/feature.js';
 
 // Install before any routes or body parsers so early 4xx responses are covered too.
 export const registerHttpResponseDiagnostics = (app, journal = serverDiagnosticJournal) => {
@@ -120,7 +121,7 @@ export const registerServerStatusRoutes = (app, dependencies) => {
     minClientApiVersion: 1,
     capabilities: [
       'api.health.v1',
-      'ui.assistants.v1',
+      ...(assistantsEnabled() ? ['ui.assistants.v1'] : []),
       'api.runtime-url.v1',
       'api.raw-file.v1',
       'api.notifications.emit.v1',

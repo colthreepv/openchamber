@@ -32,7 +32,7 @@ const createHarness = async ({ settings = {}, env = {} } = {}) => {
     fsPromises: fs,
     path,
     instanceDir: dataDir,
-    env,
+    env: { OPENCHAMBER_ASSISTANTS_ENABLED: 'false', ...env },
     agentToolRuntime,
     readSettings: () => current.settings,
   });
@@ -77,7 +77,7 @@ describe('managed OpenCode config file', () => {
       fsPromises: fs,
       path,
       instanceDir: dataDir,
-      env: {},
+      env: { OPENCHAMBER_ASSISTANTS_ENABLED: 'false' },
       agentToolRuntime: { materializePlugin: vi.fn(), createChildEnv: () => ({}) },
       limitFailoverRuntime: { materializePlugin: vi.fn(async () => failoverDirectory) },
       readSettings: () => current.settings,

@@ -16,6 +16,7 @@ const completeApp = () => [
   ...['dist-bundle/entry.mjs', 'dist-bundle/main.mjs', 'dist-bundle/early-startup.mjs', 'preload.mjs', 'browser-panel-preload.cjs', 'package.json'],
   `${web}/package.json`,
   `${web}/server/index.js`,
+  `${web}/server/lib/assistants/assistant-prompt.md`,
 ].map((filePath) => ({ path: filePath, unpacked: false }))
   .concat(helpers.map((filePath) => ({ path: filePath, unpacked: true })))
   .concat(process.platform === 'win32' ? [{ path: `node_modules/7zip-bin/win/${process.arch}/7za.exe`, unpacked: true }] : []);
@@ -34,6 +35,18 @@ const writeAsar = (directory, header) => {
 
 test('a complete app has no problems', () => {
   assert.deepEqual(findPackagedAppContentProblems(completeApp()), []);
+});
+
+test('the assistant prompt ships through dependency markdown exclusions and is required', () => {
+  const prompt = `${web}/server/lib/assistants/assistant-prompt.md`;
+  const builderPaths = [require.resolve('electron-builder')];
+  const { getNodeModuleFileMatcher } = require(require.resolve('app-builder-lib/out/fileMatcher.js', { paths: builderPaths }));
+  const { build } = require('../package.json');
+  const appDir = path.resolve(__dirname, '..');
+  const matcher = getNodeModuleFileMatcher(appDir, appDir, (pattern) => pattern, build.win,
+    { config: build, debugLogger: { isEnabled: false } });
+  assert.equal(matcher.createFilter()(path.join(appDir, prompt), { isDirectory: () => false }), true);
+  assert.deepEqual(findPackagedAppContentProblems(completeApp().filter((file) => file.path !== prompt)), [`${prompt} is missing`]);
 });
 
 test('Windows packages require an unpacked decoder for the target architecture', () => {

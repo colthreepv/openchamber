@@ -6,6 +6,20 @@ import { registerAuthAndAccessRoutes, registerCommonRequestMiddleware, registerH
 import { createServerDiagnosticJournal } from '../diagnostics/server-journal.js';
 
 describe('core-routes', () => {
+  it('does not advertise assistants when the server-wide feature is off', async () => {
+    vi.stubEnv('OPENCHAMBER_ASSISTANTS_ENABLED', 'false');
+    try {
+      const app = express();
+      registerServerStatusRoutes(app, { express, process, getHealthSnapshot: () => ({}), gracefulShutdown: vi.fn() });
+      for (const path of ['/health', '/api/version']) {
+        const response = await request(app).get(path).expect(200);
+        expect(response.body.compatibility.capabilities).not.toContain('ui.assistants.v1');
+      }
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it('advertises assistant navigation on health and version', async () => {
     const app = express();
     registerServerStatusRoutes(app, { express, process, getHealthSnapshot: () => ({}), gracefulShutdown: vi.fn() });

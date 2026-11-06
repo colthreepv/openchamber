@@ -28,6 +28,7 @@ const REQUIRED_FILES = [
   // server/index.js reads the version from the package manifest.
   `${WEB_PACKAGE}/package.json`,
   `${WEB_PACKAGE}/server/index.js`,
+  `${WEB_PACKAGE}/server/lib/assistants/assistant-prompt.md`,
 ];
 
 // ripgrep ships in Resources/ripgrep for the target architecture

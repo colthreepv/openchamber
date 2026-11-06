@@ -17,31 +17,36 @@ const canonical: Session = {
 type SessionSnapshot = { activeSessions: Session[]; hasLoaded: boolean; status: string };
 let state: SessionSnapshot;
 const refresh = mock(async () => {});
-const runtimeFetch = mock(async () => new Response(JSON.stringify({ sessionId: 'created' })));
+const requestPaths: string[] = [];
+const runtimeFetch = mock(async (_path: string) => new Response(JSON.stringify({ sessionId: 'created' })));
 const closeSurfaces = mock(() => {});
 const projectSelections: string[] = [];
 const sessionSelections: Array<[string, string | null]> = [];
 const setProject = mock((id: string) => { projectSelections.push(id); });
 const setSession = mock(async (id: string, directory: string | null) => { sessionSelections.push([id, directory]); });
 
-mock.module('@/lib/opencode/client', () => ({ opencodeClient: {} }));
+mock.module('@/lib/opencode/client', () => ({ opencodeClient: { createDirectory: async () => ({ success: true }) } }));
 mock.module('@/lib/runtime-fetch', () => ({ runtimeFetch }));
 mock.module('@/lib/runtime-switch', () => ({ captureRuntimeInstance: () => () => true, getRuntimeKey: () => 'test' }));
 mock.module('@/stores/useGlobalSessionsStore', () => ({ refreshGlobalSessions: refresh, useGlobalSessionsStore: { getState: () => state } }));
-mock.module('@/stores/useDirectoryStore', () => ({ useDirectoryStore: { getState: () => ({}) } }));
-mock.module('@/stores/useProjectsStore', () => ({ useProjectsStore: { getState: () => ({ setActiveProjectIdOnly: setProject }) } }));
+mock.module('@/stores/useDirectoryStore', () => ({ useDirectoryStore: { getState: () => ({ homeDirectory: '/home/me' }) } }));
+mock.module('@/stores/useProjectsStore', () => ({ useProjectsStore: { getState: () => ({
+  projects: [], setActiveProjectIdOnly: setProject,
+  addProject: async () => ({ id: 'alpha' }), updateProjectMeta: () => {},
+}) } }));
 mock.module('@/stores/useUIStore', () => ({ useUIStore: { getState: () => ({ closeMainSurfaces: closeSurfaces }) } }));
 mock.module('@/sync/session-ui-store', () => ({ useSessionUIStore: { getState: () => ({ setCurrentSession: setSession }) } }));
 mock.module('@/sync/session-archive-batch', () => ({ requestSessionMetadataUpdate: mock(async () => ({ outcome: 'updated' })) }));
 mock.module('@/sync/session-admission', () => ({ admitSession: mock(async () => true) }));
 mock.module('@/lib/persistence', () => ({ updateDesktopSettings: mock(async () => ({ ok: true })) }));
 
-const { openAssistant } = await import('./assistantActions');
+const { openAssistant, createAssistant } = await import('./assistantActions');
 
 beforeEach(() => {
   state = { activeSessions: [], hasLoaded: false, status: 'loading' };
   refresh.mockReset();
   runtimeFetch.mockReset();
+  requestPaths.length = 0;
   closeSurfaces.mockReset();
   setProject.mockReset();
   setSession.mockReset();
@@ -52,6 +57,19 @@ beforeEach(() => {
 });
 
 describe('openAssistant', () => {
+  test('opens the oldest canonical marker regardless of global list ordering', async () => {
+    state = { activeSessions: [{ ...canonical, id: 'newer', time: { created: 2, updated: 3 } }, canonical], hasLoaded: true, status: 'ready' };
+    await openAssistant(assistant);
+    expect(sessionSelections).toEqual([['existing', directory]]);
+  });
+
+  test('creates the canonical identity without uploading directory instructions', async () => {
+    runtimeFetch.mockImplementation(async (path) => { requestPaths.push(path); return new Response(JSON.stringify({ sessionId: 'created' })); });
+    await createAssistant({ name: 'Alpha', role: 'helper', color: null, defaultModel: '', avatar: null });
+    expect(runtimeFetch).toHaveBeenCalledTimes(1);
+    expect(requestPaths).toEqual(['/api/openchamber/sessions']);
+  });
+
   test('waits for the authoritative snapshot and opens the canonical session it finds', async () => {
     let complete!: () => void;
     refresh.mockImplementation(() => new Promise<void>((resolve) => { complete = resolve; }));

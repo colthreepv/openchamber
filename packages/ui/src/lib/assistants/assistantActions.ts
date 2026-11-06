@@ -16,7 +16,6 @@ import { updateDesktopSettings } from '@/lib/persistence';
 import type { AssistantEntry } from './assistantDirectory';
 import {
   buildAssistantMarkerPatch,
-  DEFAULT_ASSISTANT_AGENTS_MD,
   getAssistantsRoot,
   isCanonicalAssistantSession,
   slugifyAssistantName,
@@ -25,8 +24,7 @@ import {
 /**
  * Assistants fork: what the assistant sidebar does. Every step goes through
  * routes the stock server already serves: `/api/openchamber/directory`
- * (create + register the workspace), `/api/fs/upload` (the AGENTS.md
- * micro-prompt), the projects store (label, colour, model, face), and
+ * (create + register the workspace), the projects store (label, colour, model, face), and
  * `/api/openchamber/sessions` (the canonical conversation and its marker).
  */
 
@@ -105,9 +103,9 @@ const createCanonicalSession = (directory: string, name: string, role: string, m
 /** Opens an assistant's conversation, creating it again when it is missing. */
 export const openAssistant = async (assistant: AssistantEntry): Promise<void> => {
   const isCurrent = captureRuntimeInstance();
-  const findCanonical = () => useGlobalSessionsStore.getState().activeSessions.find(
+  const findCanonical = () => useGlobalSessionsStore.getState().activeSessions.filter(
     (session) => session.directory === assistant.directory && !session.parentID && isCanonicalAssistantSession(session),
-  );
+  ).sort((a, b) => a.time.created - b.time.created || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))[0];
   let canonical = findCanonical();
   if (!canonical) {
     // Cached or partial pages cannot prove the long-lived conversation is gone.
@@ -165,18 +163,6 @@ export const createAssistant = async (input: CreateAssistantInput): Promise<Crea
   if (!project) throw new Error(`Could not register ${directory}`);
 
   const warnings: string[] = [];
-  // Upload without overwrite: createDirectory also succeeds for existing folders.
-  const agentsResponse = await runtimeFetch('/api/fs/upload', {
-    method: 'POST',
-    headers: { 'content-type': 'application/octet-stream' },
-    query: { path: `${directory}/AGENTS.md` },
-    body: DEFAULT_ASSISTANT_AGENTS_MD(name, role),
-    directory,
-  });
-  ensureCurrent(isCurrent);
-  if (agentsResponse.status === 409) warnings.push('Existing AGENTS.md was preserved');
-  else if (!agentsResponse.ok) warnings.push(`AGENTS.md was not written (${agentsResponse.status})`);
-
   useProjectsStore.getState().updateProjectMeta(project.id, {
     label: name,
     color: input.color,

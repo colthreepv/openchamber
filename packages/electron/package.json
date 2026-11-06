@@ -74,7 +74,7 @@
       "preload.mjs",
       "browser-panel-preload.cjs",
       "!**/node_modules/**/*.{ts,mts,cts,tsx,map}",
-      "!**/node_modules/**/!(LICENSE*|LICENCE*|license*|licence*|License*).md",
+      "!**/node_modules/**/!(LICENSE*|LICENCE*|license*|licence*|License*|assistant-prompt).md",
       "!**/node_modules/bun-pty{,/**}",
       "!**/node_modules/luxon/{src,build/amd,build/global,build/cjs-browser}{,/**}",
       "!node_modules/@openchamber/web/{dist,src,public,scripts,test}{,/**}",
