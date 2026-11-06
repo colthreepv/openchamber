@@ -115,6 +115,8 @@ export const createMessageSearchIndexer = ({
   const backfillQueue = new Map();
   let draining = null;
   let backfill = { state: 'idle', total: 0, done: 0 };
+  const failedSessions = new Set();
+  let listFailed = false;
   let backfillRun = 0;
   let stopped = false;
 
@@ -195,7 +197,8 @@ export const createMessageSearchIndexer = ({
             break;
           }
           const text = readSearchableText(message);
-          if (text) rows.push({ id: message.id, sessionId, role, createdAt: message.time.created, text });
+          // Attachment-only prompts still delimit an exchange for memory zoom.
+          if (text || message.type === 'user') rows.push({ id: message.id, sessionId, role, createdAt: message.time.created, text: text ?? '' });
           // A row of its own: the reply and the reasoning are found, filtered
           // and dropped separately, and both lead to the same message.
           const reasoning = message.type === 'assistant' && includeReasoning() ? joinParts(message, reasoningPartSchema) : null;
@@ -238,7 +241,9 @@ export const createMessageSearchIndexer = ({
       for (let job = takeNext(); job && !stopped; job = takeNext()) {
         try {
           await syncSession(job.sessionId, job.directory);
+          failedSessions.delete(job.sessionId);
         } catch (error) {
+          failedSessions.add(job.sessionId);
           logger.warn?.('[message-search] could not index a session:', error?.message ?? error);
         }
         if (job.fromBackfill) {
@@ -287,10 +292,13 @@ export const createMessageSearchIndexer = ({
         cursor = next;
       }
     } catch (error) {
+      listFailed = true;
       logger.warn?.('[message-search] could not list sessions:', error?.message ?? error);
       return;
     }
     if (run !== backfillRun || stopped) return;
+    listFailed = false;
+    for (const id of failedSessions) if (!listed.has(id)) failedSessions.delete(id);
     for (const id of store.sessionIds()) {
       if (!listed.has(id)) store.deleteSession(id);
     }
@@ -343,7 +351,7 @@ export const createMessageSearchIndexer = ({
     },
 
     status() {
-      return { backfill: { ...backfill, queued: backfillQueue.size }, ...store.counts() };
+      return { backfill: { ...backfill, queued: backfillQueue.size }, failures: failedSessions.size, listFailed, ...store.counts() };
     },
 
     /** Test seam: wait for the queue to drain. */

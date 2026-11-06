@@ -201,6 +201,12 @@ const WEB_PARAMETER_PROPERTIES = pickParameters(WEB_PARAMETER_NAMES);
 const MEMORY_PARAMETER_PROPERTIES = {
   ...pickParameters(MEMORY_PARAMETER_NAMES),
   ...MEMORY_PARAMETER_OVERRIDES,
+  query: { type: 'string' },
+  since: { type: 'integer', description: 'Inclusive epoch milliseconds' },
+  until: { type: 'integer', description: 'Inclusive epoch milliseconds' },
+  limit: { type: 'integer', description: 'Recall hits, default 10, capped at 50' },
+  sessionId: { type: 'string', description: 'From recall, for zoom' },
+  messageId: { type: 'string', description: 'From recall, for zoom' },
 };
 
 // Its own names, not the shared map: `title`, `body` and `text` mean something
@@ -337,7 +343,8 @@ const SCHEDULE_TOOL_DESCRIPTION = "Scheduled tasks: prompts OpenChamber runs on 
 
 const WEB_TOOL_DESCRIPTION = "OpenChamber's browser panel, to check your work by looking at it. One action per call: open, snapshot for text, selectors and errors, then click, type, select or scroll by those selectors. Close tabs you opened for your own work with browser.close; leave open the ones you opened to show the user something. The page runs with the user's real logins; treat it as their live session.";
 
-const MEMORY_TOOL_DESCRIPTION = "Memory that persists across sessions. One fact per entry, under a title that names what it holds, so the session index tells when to read it: \"Session row menu is full: no new items\", not \"Sidebar decisions\". Save what code and docs do not show: a decision and its reason, a rejected alternative, a deliberate \"leave this as it is\", the user's corrections and preferences, a hard-won pointer. Never one-off task state, secrets or credentials, or what the user asked you not to keep; what the user explicitly asks you to remember, save. Project scope holds what concerns this project, global what concerns the user in every project.";
+const MEMORY_TOOL_DESCRIPTION = "Recall past conversations when the user refers to something outside visible context. Search before asking them to repeat: try 2-3 query variants in Italian and English, synonyms and exact technical names, with words of at least 3 characters. Verify a hit with zoom before relying on it; the most recent mention wins. Recall and zoom cover only this assistant's canonical conversation and its work sessions. "
+  + "Saved facts persist across sessions. One fact per entry, with a title naming what it holds. Save decisions and reasons, rejected alternatives, deliberate constraints, user corrections and preferences, hard-won pointers, and what the user asks you to remember. Never save one-off task state, secrets, credentials or what the user asks you not to keep. Project scope concerns this project; global scope concerns the user across projects.";
 
 const KNOWLEDGE_TOOL_DESCRIPTION = "The project's Notes, Todos and Plans, shown in OpenChamber's Project knowledge panel and shared by its sessions. One action per call; list returns everything unless planId or ready narrows it. "
   + "Notes: short facts the user wants at hand; your own learnings go to memory. Todos: the user's backlog; add one when asked or when you stop with work left, never for the steps of your current task. "
@@ -927,10 +934,11 @@ export const createAgentToolRuntime = (dependencies) => {
     // OpenCode 2 tools no longer receive a directory, so the plugin sends the
     // session id and the directory is resolved here. An unresolvable session
     // falls through with no directory, exactly like the old "no directory" path.
-    // Knowledge writes are attributed to the calling session, so no payload
-    // field may stand in for the session OpenCode reported.
-    const knowledgeAction = OPENCHAMBER_KNOWLEDGE_ACTIONS.includes(action);
-    let contextDirectory = knowledgeAction ? undefined : asNonEmptyString(payload.contextDirectory) ?? undefined;
+    // Knowledge provenance and assistant recall scope use only the session
+    // OpenCode reported; payload attribution must not confer access.
+    const attributedAction = OPENCHAMBER_KNOWLEDGE_ACTIONS.includes(action)
+      || action === 'memory.recall' || action === 'memory.zoom';
+    let contextDirectory = attributedAction ? undefined : asNonEmptyString(payload.contextDirectory) ?? undefined;
     const sessionID = asNonEmptyString(payload.sessionID);
     if (!contextDirectory && sessionID && typeof resolveSessionDirectory === 'function') {
       contextDirectory = await Promise.resolve(resolveSessionDirectory(sessionID))
@@ -939,7 +947,7 @@ export const createAgentToolRuntime = (dependencies) => {
     }
     try {
       // The calling session scopes browser actions to that session's page.
-      const contextSessionId = knowledgeAction ? sessionID : asNonEmptyString(payload.contextSessionId) ?? sessionID;
+      const contextSessionId = attributedAction ? sessionID : asNonEmptyString(payload.contextSessionId) ?? sessionID;
       // The call id lets a page that waits for an answer be found again
       // when the user answers it.
       const contextCallId = asNonEmptyString(payload.callID);

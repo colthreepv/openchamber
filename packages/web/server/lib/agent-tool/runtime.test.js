@@ -12,6 +12,8 @@ import { createOpenChamberControlService } from '../openchamber-control/service.
 import { createProjectContextRuntime } from '../project-context/runtime.js';
 import { createProjectIdFromPath } from '../projects/project-id.js';
 import { OPENCHAMBER_AGENT_TOOL_ACTION_DEFINITIONS, OPENCHAMBER_CONTROL_ACTION_DEFINITIONS } from '../openchamber-control/actions.js';
+import { openMessageSearchStore, toMatchExpression, buildSnippet } from '../message-search/store.js';
+import { loadSqliteOpener } from '../message-search/sqlite.js';
 
 const temporaryDirectories = [];
 
@@ -64,6 +66,57 @@ const loadTools = async (dataDir, tag, hooks = {}, removed = []) => {
 };
 
 describe('agent tool action allowlist', () => {
+  it('runs the materialized recall and zoom tool through its authenticated HTTP callback and SQLite', async () => {
+    const store = openMessageSearchStore(loadSqliteOpener()(':memory:'));
+    store.upsertSession({ id: 'canonical', directory: '/assistant', title: 'Assistant' });
+    store.putMessages([
+      { id: 'u1', sessionId: 'canonical', role: 'user', createdAt: 1, text: 'Remember postgres' },
+      { id: 'a1', sessionId: 'canonical', role: 'assistant', createdAt: 2, text: 'Use postgres 17' },
+    ]);
+    const settings = { agentMemoryToolEnabled: true, messageSearchEnabled: true };
+    const index = { backfill: { state: 'done' } };
+    const service = createOpenChamberControlService({
+      readSettingsFromDiskMigrated: async () => settings,
+      buildOpenCodeUrl: () => 'http://localhost:1/api/info', getOpenCodeAuthHeaders: () => ({}),
+      createClient: () => ({ session: { list: async () => ({ data: [{ id: 'canonical', location: { directory: '/assistant' }, time: { created: 1 }, metadata: { openchamber: { assistant: { name: 'Assistant', canonical: true } } } }] }) } }),
+      messageSearch: {
+        status: async () => ({ state: 'on' }),
+        search: (input) => ({ status: 'ok', index, hits: store.search({ ...input, match: toMatchExpression(input.query) }).map((hit) => ({ ...hit, snippet: buildSnippet(hit.text, [input.query]) })) }),
+        zoom: (input) => ({ messages: store.exchange(input), index }),
+      },
+    });
+    const { runtime, dataDir } = await createRuntime({ executeAction: (...args) => service.execute(...args) });
+    const prepared = await prepareManagedEnv(runtime, { includeControl: false, includeWeb: false, includeMemory: true });
+    const tools = await loadTools(dataDir, 'recall-sqlite');
+    const app = express();
+    runtime.registerRoutes(app, express);
+    const server = await new Promise((resolve) => { const listener = app.listen(0, 'localhost', () => resolve(listener)); });
+    const oldUrl = process.env.OPENCHAMBER_AGENT_TOOL_URL;
+    const oldToken = process.env.OPENCHAMBER_AGENT_TOOL_TOKEN;
+    process.env.OPENCHAMBER_AGENT_TOOL_URL = `http://localhost:${server.address().port}/api/openchamber/agent-tool`;
+    process.env.OPENCHAMBER_AGENT_TOOL_TOKEN = prepared.OPENCHAMBER_AGENT_TOOL_TOKEN;
+    const call = async (action, parameters) => JSON.parse((await tools.openchamber_memory.execute({ action, parameters }, { sessionID: 'canonical', progress: async () => {} })).content);
+    try {
+      const recalled = await call('recall', { query: 'postgres' });
+      expect(recalled).toMatchObject({ ok: true, data: { hits: [{ id: 'a1', snippet: 'Use «postgres» 17' }, { id: 'u1' }] } });
+      expect(await call('zoom', { sessionId: 'canonical', messageId: 'a1' })).toMatchObject({ ok: true, data: { messages: [{ id: 'u1' }, { id: 'a1' }] } });
+      settings.agentMemoryToolEnabled = false;
+      expect(await call('recall', { query: 'postgres' })).toMatchObject({ ok: false, error: { message: expect.stringContaining('disabled') } });
+    } finally {
+      if (oldUrl === undefined) delete process.env.OPENCHAMBER_AGENT_TOOL_URL; else process.env.OPENCHAMBER_AGENT_TOOL_URL = oldUrl;
+      if (oldToken === undefined) delete process.env.OPENCHAMBER_AGENT_TOOL_TOKEN; else process.env.OPENCHAMBER_AGENT_TOOL_TOKEN = oldToken;
+      await new Promise((resolve) => server.close(resolve));
+      store.close();
+    }
+  });
+
+  it.each(['recall', 'zoom'])('attributes memory %s only to the session OpenCode reported', async (action) => {
+    const { runtime, executeAction } = await createRuntime();
+    const result = await runtime.execute({ tool: 'openchamber_memory', sessionID: 'actual', contextSessionId: 'spoofed', contextDirectory: '/spoofed', input: { action, query: 'postgres' } });
+    expect(result.ok).toBe(true);
+    expect(executeAction).toHaveBeenCalledWith(`memory.${action}`, expect.any(Object), undefined, expect.objectContaining({ contextSessionId: 'actual' }));
+  });
+
   it('defines a short title and agent description for every action', () => {
     expect(OPENCHAMBER_CONTROL_ACTION_DEFINITIONS.every(({ action, title, description }) => action && title && description)).toBe(true);
   });
@@ -623,7 +676,7 @@ describe('managed agent tool runtime', () => {
 
     expect(Object.keys(tool)).toEqual(['openchamber', 'openchamber_memory']);
     expect(Object.keys(tool.openchamber_memory.input.properties.parameters.properties).sort())
-      .toEqual(['body', 'memoryId', 'scope', 'title', 'type']);
+      .toEqual(['body', 'limit', 'memoryId', 'messageId', 'query', 'scope', 'sessionId', 'since', 'title', 'type', 'until']);
     // Memory inputs must not leak into the control tool's schema, which the
     // model pays for on every unrelated call.
     expect(Object.keys(tool.openchamber.input.properties.parameters.properties)).not.toContain('memoryId');

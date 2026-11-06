@@ -180,7 +180,7 @@ export const createMessageSearchRuntime = ({
      * answer then says so instead of pretending nothing matched. `null`
      * overall means no index is running.
      */
-    search: ({ query, sessionId, directories, role, includeReasoning, before, limit, order }) => {
+    search: ({ query, sessionId, sessionIds, since, until, directories, role, includeReasoning, before, limit, order }) => {
       if (!engine) return null;
       const match = toMatchExpression(query);
       if (!match) return { status: 'query-too-short', hits: [] };
@@ -188,6 +188,9 @@ export const createMessageSearchRuntime = ({
       const hits = engine.store.search({
         match,
         sessionId,
+        sessionIds,
+        since,
+        until,
         directories,
         role,
         // Stray rows from a switch that just flipped off stay out too.
@@ -215,6 +218,11 @@ export const createMessageSearchRuntime = ({
         index: engine.indexer.status(),
       };
     },
+
+    zoom: ({ sessionId, messageId }) => engine ? {
+      messages: engine.store.exchange({ sessionId, messageId }),
+      index: engine.indexer.status(),
+    } : null,
 
     /** What the Settings page shows; the counts exist only while the index is open. */
     status: async () => {

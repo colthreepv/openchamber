@@ -90,6 +90,23 @@ after another in the order asked.
 
 ## Queries
 
+Schema 4 retains empty-text user rows as exchange boundaries. Attachment-only
+prompts must stop zoom even though they cannot match an FTS query; older
+derived indexes rebuild to recover those boundaries from OpenCode.
+
+The store also accepts a server-resolved `sessionIds` set and inclusive
+`since` / `until` epoch-millisecond bounds. An empty set returns no rows.
+`exchange` reads the indexed user message at or before a target and all
+settled reply rows before the next user message, ordered by creation time
+and row ID. It excludes reasoning and returns null for an unknown target or
+a target whose opening user turn is not indexed. The runtime exposes this
+as `zoom`; neither operation calls OpenCode. The assistant memory action
+owns authorization and translates snippet markers for the model.
+
+Indexer status includes failed-session count and session-list failure, so a
+completed walk with failed reads cannot claim complete recall. A successful
+retry clears that session's failure; a complete list clears the list failure.
+
 Hits carry the message id; pages are cut by row id, since a reply and its
 reasoning share a message. Every word of the query must occur; words shorter than three characters cannot
 be looked up and are left out, and a query made only of them answers
