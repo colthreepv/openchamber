@@ -18,6 +18,16 @@ the user can want independently:
   actions, so the service cannot tell an agent call from a CLI one.
 - `openchamber_web` — looking at and interacting with the page in OpenChamber's
   browser panel. Enabled while `agentWebToolEnabled` is not `false`.
+- `openchamber_memory` exposes saved facts and assistant conversation recall.
+  The existing `agentMemoryToolEnabled` setting enables both by default;
+  recall and zoom refuse stale-plugin calls when it is off. `memory.recall`
+  searches the message index with a query, inclusive epoch-millisecond
+  `since` / `until`, and `limit` defaulting to 10, capped at 50.
+  `memory.zoom` takes `sessionId` and `messageId` from a hit and returns its
+  indexed user turn and settled replies. Both derive assistant membership
+  from the session OpenCode reported, ignoring payload attribution. Message
+  search must also be enabled in Settings → Chat. The description tells the
+  agent to vary lexical queries, verify with zoom, and prefer recent mentions.
 - `openchamber_notify` — `notify.send`, a notification to the user through
   `lib/notifications/emit-route.js` (same limits and rate window as
   `POST /api/notifications/emit`). Off by default: enabled only while

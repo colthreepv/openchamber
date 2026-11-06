@@ -9,6 +9,20 @@ other.
 
 ## Boundaries
 
+- `assistant-memory.js` owns `memory.recall` and `memory.zoom`. It resolves
+  the calling session through a complete global OpenCode root-session list,
+  never a directory-wide location scan. Only a canonical marker or a recorded
+  direct starter grants access; merely sharing its directory does not.
+  Duplicate canonical markers in one normalized directory resolve to the
+  oldest creation time, then lowest ID. Work started by any duplicate belongs
+  to that identity; only the selected canonical conversation is searched.
+  Archive state does not remove past conversations from memory. Nested starter
+  chains and subagents are outside this recall contract.
+  Disabled message search, an unavailable index, failed session lookup and
+  too-short queries are failures. Backfill and failed indexing reads attach
+  an incomplete-results warning, including to successful empty results.
+  Zoom reads only index rows, omits reasoning, tool output and attachments,
+  and clips at 100,000 text characters with an explicit marker.
 - `service.js` validates and executes the fixed project, model, session, and
   scheduled-task action allowlist. `actions.js` marks CLI-only actions with
   `agentExposed: false` (currently `schedule.status`); the agent tool consumes
@@ -371,6 +385,13 @@ other.
   forwards the action like the rest.
 
 ## Decisions
+
+### Why recall extends the existing memory tool
+
+`openchamber_memory` and its default-on setting already own saved facts.
+Adding recall and zoom preserves that API and avoids a second tool with the
+same name or a second setting governing one tool. Conversation reads stay
+assistant-scoped independently of saved facts' project/global scope.
 
 ### Why a background message waits behind a page and does not end it
 

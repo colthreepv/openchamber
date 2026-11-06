@@ -10,7 +10,7 @@
  * The file is derived data. A schema change drops and rebuilds it.
  */
 
-const MESSAGE_SEARCH_SCHEMA_VERSION = '3';
+const MESSAGE_SEARCH_SCHEMA_VERSION = '4';
 
 // Private-use characters around each match in a snippet. They cannot occur in
 // ordinary text and are not markup, so a snippet is never rendered as HTML.
@@ -250,9 +250,16 @@ export const openMessageSearchStore = (connection) => {
      * Newest matches first. `before` pages by creation time (with the message
      * id breaking ties), so a page boundary never repeats or skips a hit.
      */
-    search: ({ match, sessionId = null, directories = [], role = null, includeReasoning = true, before = null, limit, order = 'desc' }) => {
+    search: ({ match, sessionId = null, sessionIds = null, since = null, until = null, directories = [], role = null, includeReasoning = true, before = null, limit, order = 'desc' }) => {
       const where = ['messages_fts MATCH ?'];
       const params = [match];
+      if (sessionIds !== null) {
+        if (sessionIds.length === 0) return [];
+        where.push(`m.session_id IN (${sessionIds.map(() => '?').join(', ')})`);
+        params.push(...sessionIds);
+      }
+      if (since !== null) { where.push('m.created_at >= ?'); params.push(since); }
+      if (until !== null) { where.push('m.created_at <= ?'); params.push(until); }
       if (sessionId) {
         where.push('m.session_id = ?');
         params.push(sessionId);
@@ -284,6 +291,29 @@ export const openMessageSearchStore = (connection) => {
          ORDER BY m.created_at ${direction}, m.id ${direction}
          LIMIT ?`,
         params,
+      );
+    },
+
+    /** The indexed user turn and settled replies, excluding reasoning. */
+    exchange: ({ sessionId, messageId }) => {
+      const target = connection.get("SELECT created_at, id FROM messages WHERE session_id = ? AND message_id = ? AND role <> 'reasoning'", [sessionId, messageId]);
+      if (!target) return null;
+      const start = connection.get(
+        "SELECT created_at, id FROM messages WHERE session_id = ? AND role = 'user' AND (created_at < ? OR (created_at = ? AND id <= ?)) ORDER BY created_at DESC, id DESC LIMIT 1",
+        [sessionId, target.created_at, target.created_at, target.id],
+      );
+      if (!start) return null;
+      const end = connection.get(
+        "SELECT created_at, id FROM messages WHERE session_id = ? AND role = 'user' AND (created_at > ? OR (created_at = ? AND id > ?)) ORDER BY created_at, id LIMIT 1",
+        [sessionId, start.created_at, start.created_at, start.id],
+      );
+      return connection.all(
+        `SELECT message_id AS id, session_id AS sessionId, role, created_at AS createdAt, text FROM messages
+         WHERE session_id = ? AND role <> 'reasoning'
+         AND (created_at > ? OR (created_at = ? AND id >= ?))
+         ${end ? 'AND (created_at < ? OR (created_at = ? AND id < ?))' : ''}
+         ORDER BY created_at, id`,
+        [sessionId, start.created_at, start.created_at, start.id, ...(end ? [end.created_at, end.created_at, end.id] : [])],
       );
     },
 

@@ -106,6 +106,35 @@ describe.skipIf(!open)('message search index', () => {
     await indexer.idle();
   };
 
+  it('reports list and session read failures until a successful retry', async () => {
+    fake.session('a');
+    fake.user('a', 'u1', 'indexed eventually');
+    fake.failSessionList(true);
+    await backfill();
+    expect(indexer.status().listFailed).toBe(true);
+    fake.failSessionList(false);
+    const listMessages = fake.client.message.list;
+    fake.client.message.list = async () => { throw new Error('offline'); };
+    await backfill();
+    expect(indexer.status()).toMatchObject({ listFailed: false, failures: 1, backfill: { state: 'done' } });
+    fake.client.message.list = listMessages;
+    await backfill();
+    expect(indexer.status()).toMatchObject({ listFailed: false, failures: 0 });
+    expect(search('eventually')).toHaveLength(1);
+  });
+
+  it('retains attachment-only user prompts as exchange boundaries', async () => {
+    fake.session('a');
+    fake.user('a', 'u1', 'First question');
+    fake.assistant('a', 'r1', [{ type: 'text', text: 'First answer' }]);
+    fake.user('a', 'u2', '');
+    fake.assistant('a', 'r2', [{ type: 'text', text: 'Answer about an attachment' }]);
+    await backfill();
+    expect(store.exchange({ sessionId: 'a', messageId: 'r1' }).map((m) => m.id)).toEqual(['u1', 'r1']);
+    expect(store.exchange({ sessionId: 'a', messageId: 'r2' }).map((m) => m.id)).toEqual(['u2', 'r2']);
+    expect(search('attachment').map((h) => h.id)).toEqual(['r2']);
+  });
+
   it('indexes user messages and agent text, not tools, reasoning or subagents', async () => {
     fake.session('a');
     fake.session('child', { parentID: 'a' });

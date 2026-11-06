@@ -6,6 +6,7 @@ import { OpenChamberControlError, asControlError } from './error.js';
 import { OPENCHAMBER_ALL_ACTIONS, OPENCHAMBER_KNOWLEDGE_ACTIONS } from './actions.js';
 import { writeScreenshot } from './screenshots.js';
 import { createProjectKnowledgeActions } from './project-knowledge.js';
+import { createAssistantMemoryActions } from './assistant-memory.js';
 import { createPageAnswers, createRenderPageAction } from './render-page.js';
 import { createImageGenerationAction } from './generate-image.js';
 import { createSecretRequests } from './secret-request.js';
@@ -227,6 +228,7 @@ export const createOpenChamberControlService = (dependencies) => {
     fileOpen = null,
     notifyUser = null,
     agentMemoryActions = null,
+    messageSearch = null,
     sessionLinks = null,
     // Git and metadata access for `work.name`; absent means the server cannot name tasks.
     workNaming = null,
@@ -355,6 +357,7 @@ export const createOpenChamberControlService = (dependencies) => {
     return sessionService.resolveDirectory({ projectId: projectID });
   };
 
+  const assistantMemoryActions = createAssistantMemoryActions({ getClient, messageSearch, readSettings: readSettingsFromDiskMigrated });
   const knowledgeActions = createProjectKnowledgeActions({
     projectContextRuntime,
     resolveProjectContextId,
@@ -897,6 +900,9 @@ export const createOpenChamberControlService = (dependencies) => {
       }
       if (OPENCHAMBER_KNOWLEDGE_ACTIONS.includes(action)) {
         return await knowledgeActions.execute(action, input, contextDirectory, options.contextSessionId);
+      }
+      if (action === 'memory.recall' || action === 'memory.zoom') {
+        return await assistantMemoryActions.execute(action, input, options.contextSessionId);
       }
       if (action.startsWith('memory.')) {
         if (!agentMemoryActions) {

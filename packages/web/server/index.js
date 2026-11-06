@@ -2106,6 +2106,7 @@ const insideSpaceTaskNaming = process.env.OPENCHAMBER_SPACE_TASK_TITLE_FILE && p
   }) : null;
 
 const openChamberControlService = createOpenChamberControlService({
+  messageSearch: messageSearchRuntime,
   chatsScope: scheduledChatsScope,
   readSettingsFromDiskMigrated,
   sanitizeProjects,
