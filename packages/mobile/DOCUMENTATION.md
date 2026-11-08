@@ -14,6 +14,15 @@ The app-local `RuntimeWebSocket` plugins own header-bearing direct WebSockets on
 
 ## Decisions
 
+### Why personal Android builds replace the push registration methods
+
+The separate `com.openchamber.app.personal` application ID has no Firebase
+configuration. Its native push adapter rejects register and unregister before
+the upstream plugin can access Firebase, which would otherwise throw on the
+bridge thread. `MainActivity.load()` registers the adapter after Capacitor's
+generated plugin list so its `PushNotifications` entry wins. The official app
+keeps the upstream plugin and Firebase configuration.
+
 ### Why the socket task factory is separate from the Capacitor plugin
 
 The Foundation-only factory lets the native regression test receive large snapshots through the production URLSession task configuration without loading a WebView or building the app. Run `node --test scripts/runtime-websocket.test.mjs` from `packages/mobile` on macOS with Swift installed. This covers Foundation receive behavior; plugin bridge delivery and device reconnect still need an app check.

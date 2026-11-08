@@ -6,6 +6,7 @@ import { getDictationStartOptions } from './useDictation';
 describe('getDictationStartOptions', () => {
   const original = {
     sttProvider: useConfigStore.getState().sttProvider,
+    sttStreaming: useConfigStore.getState().sttStreaming,
     sttServerUrl: useConfigStore.getState().sttServerUrl,
     sttModel: useConfigStore.getState().sttModel,
     sttLanguage: useConfigStore.getState().sttLanguage,
@@ -19,6 +20,7 @@ describe('getDictationStartOptions', () => {
   test('passes the custom stt endpoint path to the server', () => {
     useConfigStore.setState({
       sttProvider: 'openai-compatible',
+      sttStreaming: false,
       sttServerUrl: 'http://127.0.0.1:9/v1',
       sttModel: 'whisper-1',
       sttLanguage: 'en',
@@ -29,6 +31,7 @@ describe('getDictationStartOptions', () => {
       provider: 'openai-compatible',
       language: 'en',
       openaiCompatible: {
+        streaming: false,
         baseUrl: 'http://127.0.0.1:9/v1',
         model: 'whisper-1',
         endpointPath: '/speech_to_text',
@@ -39,6 +42,7 @@ describe('getDictationStartOptions', () => {
   test('leaves the path out when the setting is empty', () => {
     useConfigStore.setState({
       sttProvider: 'openai-compatible',
+      sttStreaming: true,
       sttServerUrl: 'http://127.0.0.1:9/v1',
       sttModel: 'whisper-1',
       sttLanguage: '',
@@ -48,6 +52,7 @@ describe('getDictationStartOptions', () => {
     expect(getDictationStartOptions()).toEqual({
       provider: 'openai-compatible',
       openaiCompatible: {
+        streaming: true,
         baseUrl: 'http://127.0.0.1:9/v1',
         model: 'whisper-1',
         endpointPath: undefined,

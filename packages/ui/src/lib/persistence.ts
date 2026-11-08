@@ -192,6 +192,7 @@ const persistToLocalStorage = (settings: DesktopSettings) => {
   } else {
     localStorage.removeItem('sttProvider');
   }
+  setOrRemoveLocalStorage('sttStreaming', settings.sttStreaming === undefined ? null : String(settings.sttStreaming));
   setOrRemoveLocalStorage('sttServerUrl', typeof settings.sttServerUrl === 'string' ? settings.sttServerUrl : null);
   setOrRemoveLocalStorage('sttEndpointPath', settings.sttEndpointPath ?? null);
   setOrRemoveLocalStorage('sttModel', typeof settings.sttModel === 'string' ? settings.sttModel : null);

@@ -2252,6 +2252,8 @@ export const settingsDict = {
   'settings.voice.page.field.selectLanguagePlaceholder': '选择语言',
   'settings.voice.page.field.sttBrowserSupportError': '此浏览器不支持 MediaRecorder 或 AudioContext。服务器 STT 可能无法工作。',
   'settings.voice.page.field.sttServerUrlHint': 'Whisper 兼容服务器的基础 URL',
+  "settings.voice.page.field.sttStreaming": "实时流式传输 (OpenCodex)",
+  "settings.voice.page.field.sttStreamingHint": "使用服务器 URL 和 API 密钥，忽略模型和端点路径。会话最长五分钟。",
   'settings.voice.page.field.sttLanguageHint': 'BCP-47 代码（例如 en、fr）。留空为自动检测。',
   'settings.voice.page.field.correctTranscript': '修正听错的词',
   'settings.voice.page.field.correctTranscriptInfo': '停止听写后，小模型会阅读文本，修正语音识别听错的词。听写的文本会发送给小模型的提供方，并在一两秒后出现。',

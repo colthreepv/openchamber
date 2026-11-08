@@ -2252,6 +2252,8 @@ export const settingsDict = {
   "settings.voice.page.field.selectLanguagePlaceholder": "Seleccionar idioma",
   "settings.voice.page.field.sttBrowserSupportError": "MediaRecorder o AudioContext no están disponibles en este navegador. El STT del servidor puede que no funcione.",
   "settings.voice.page.field.sttServerUrlHint": "URL base del servidor compatible con Whisper",
+  "settings.voice.page.field.sttStreaming": "Transmisión en tiempo real (OpenCodex)",
+  "settings.voice.page.field.sttStreamingHint": "Usa la URL del servidor y la clave API. Se ignoran el modelo y la ruta. Las sesiones duran como máximo cinco minutos.",
   "settings.voice.page.field.sttLanguageHint": "Código BCP-47 (por ejemplo en, fr). Dejar en blanco para detección automática.",
   "settings.voice.page.field.correctTranscript": "Corregir palabras mal entendidas",
   "settings.voice.page.field.correctTranscriptInfo": "Cuando terminas de dictar, el modelo pequeño lee el texto y corrige las palabras que el reconocimiento de voz entendió mal. El texto dictado se envía al proveedor del modelo pequeño y aparece uno o dos segundos después.",

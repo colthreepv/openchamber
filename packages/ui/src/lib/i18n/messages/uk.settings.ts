@@ -2252,6 +2252,8 @@ export const settingsDict = {
   "settings.voice.page.field.selectLanguagePlaceholder": "Виберіть мову",
   "settings.voice.page.field.sttBrowserSupportError": "MediaRecorder або AudioContext недоступні в цьому браузері. Сервер STT може не працювати.",
   "settings.voice.page.field.sttServerUrlHint": "Базовий URL Whisper-сумісного сервера",
+  "settings.voice.page.field.sttStreaming": "Потокове розпізнавання (OpenCodex)",
+  "settings.voice.page.field.sttStreamingHint": "Використовує URL сервера і ключ API. Модель і шлях ігноруються. Сесія триває не більше п’яти хвилин.",
   "settings.voice.page.field.sttLanguageHint": "BCP-47 код (наприклад en, fr). Залиште поле порожнім для автоматичного визначення.",
   "settings.voice.page.field.correctTranscript": "Виправляти неправильно почуті слова",
   "settings.voice.page.field.correctTranscriptInfo": "Коли ви зупиняєте диктування, мала модель читає текст і виправляє слова, які модель розпізнавання почула неправильно. Продиктований текст іде до провайдера малої моделі, а в полі з'являється на секунду-дві пізніше.",

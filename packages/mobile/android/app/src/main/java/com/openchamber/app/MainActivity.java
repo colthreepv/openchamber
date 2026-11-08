@@ -20,6 +20,11 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     protected void load() {
+        // Register after Capacitor's generated plugin list so this replaces its
+        // Firebase entry points only for the separate personal application ID.
+        if (getPackageName().equals("com.openchamber.app.personal")) {
+            registerPlugin(PersonalPushNotificationsPlugin.class);
+        }
         // Capacitor inflates a plain CapacitorWebView, which tells the IME it accepts no
         // content. Swap in ours before the bridge resolves the WebView by id.
         setContentView(R.layout.activity_main);

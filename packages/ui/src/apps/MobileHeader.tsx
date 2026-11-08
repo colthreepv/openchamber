@@ -11,6 +11,9 @@ import { useSessionUIStore } from '@/sync/session-ui-store';
 import { useSession } from '@/sync/sync-context';
 
 
+import { AssistantHeaderBadge, AssistantHeaderLabel } from '@/components/assistants/AssistantHeaderParts';
+import { useAssistantNavigation } from '@/lib/assistants/assistantsMode';
+import { useAssistantForSession } from '@/stores/useAssistantStore';
 import { MobileSessionMetadataButton } from './MobileSessionMetadata';
 import { MobileSessionSwitcher } from './MobileSessionSwitcher';
 import { MOBILE_HEADER_BUTTON_CLASS } from '@/components/ui/mobileHeader';
@@ -52,6 +55,9 @@ export const MobileHeader: React.FC<{
   const sessionTitle = currentSession?.title?.trim();
   // Single-line title, desktop-style: session title, or the "New session"
   // placeholder on the draft screen. No project/branch metadata line.
+  const assistantMode = useAssistantNavigation();
+  const assistantOwner = useAssistantForSession(assistantMode ? currentSessionId : null);
+  const canonicalAssistant = Boolean(assistantOwner?.isCanonical && !runOverviewKey);
   const primaryLabel = (runOverviewKey ? runTitle : null)
     || sessionTitle
     || (currentSessionId ? t('mobile.sessions.untitled') : t('sessions.switcher.draftTitle'));
@@ -101,6 +107,9 @@ export const MobileHeader: React.FC<{
             <Icon name="list-unordered" className="size-5" />
           </button>
 
+          {/* Assistants fork: a work session links back to its assistant. */}
+          {runOverviewKey ? null : <AssistantHeaderBadge sessionId={currentSessionId} />}
+
           {/* Session title doubles as the recent-sessions switcher trigger. */}
           <button
             ref={titleRef}
@@ -109,23 +118,28 @@ export const MobileHeader: React.FC<{
               'flex min-w-0 items-center rounded-lg px-2 py-1.5 text-start transition-colors active:bg-interactive-active focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               compactTitle ? 'shrink' : 'flex-1',
             )}
-            aria-label={t('sessions.switcher.openAria')}
-            aria-haspopup="dialog"
-            aria-expanded={switcherOpen}
-            onClick={toggleSwitcher}
+            aria-label={canonicalAssistant ? undefined : t('sessions.switcher.openAria')}
+            aria-haspopup={canonicalAssistant ? undefined : 'dialog'}
+            aria-expanded={canonicalAssistant ? undefined : switcherOpen}
+            disabled={canonicalAssistant}
+            onClick={canonicalAssistant ? undefined : toggleSwitcher}
             style={{ touchAction: 'manipulation' }}
           >
             <span className="flex min-w-0 items-center gap-1">
-              <span dir="auto" className="block min-w-0 truncate oc-ui-start-align typography-ui-label font-medium text-foreground">{primaryLabel}</span>
+              <AssistantHeaderLabel
+                sessionId={runOverviewKey ? null : currentSessionId}
+                title={primaryLabel}
+                fallback={<span dir="auto" className="block min-w-0 truncate oc-ui-start-align typography-ui-label font-medium text-foreground">{primaryLabel}</span>}
+              />
               {/* Discoverability: the chevron marks the title as a disclosure
                   trigger and flips while the switcher is open. */}
-              <Icon
+              {!canonicalAssistant && <Icon
                 name="arrow-down-s"
                 className={cn(
                   'size-4 shrink-0 text-muted-foreground transition-transform duration-150',
                   switcherOpen && 'rotate-180',
                 )}
-              />
+              />}
             </span>
           </button>
 

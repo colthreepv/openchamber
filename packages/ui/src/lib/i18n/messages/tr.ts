@@ -1,3 +1,4 @@
+import { assistantsI18n } from './assistants.i18n';
 import { settingsDict } from './tr.settings';
 import { linearIssuePickerI18n } from './linear-issue-picker.i18n';
 import { referencePickerI18n } from './reference-picker.i18n';
@@ -63,6 +64,7 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
 import { tooltipsChatI18n } from './tooltips-chat.i18n';
 
 export const dict = {
+  ...assistantsI18n['tr'],
   'quota.family.zen': 'Zen Modelleri',
   'quota.value.requests': 'İstekler: {count}',
   'quota.value.spent': '{spent} harcandı',

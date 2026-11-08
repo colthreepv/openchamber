@@ -2285,6 +2285,8 @@ export const settingsDict = {
   'settings.voice.page.field.selectLanguagePlaceholder': '言語を選択',
   'settings.voice.page.field.sttBrowserSupportError': 'このブラウザでは MediaRecorder または AudioContext が利用できません。サーバー STT が動作しない可能性があります。',
   'settings.voice.page.field.sttServerUrlHint': 'Whisper 互換サーバーのベース URL',
+  "settings.voice.page.field.sttStreaming": "リアルタイムストリーミング (OpenCodex)",
+  "settings.voice.page.field.sttStreamingHint": "サーバー URL と API キーを使用し、モデルとエンドポイントパスは無視します。セッションは最長5分です。",
   'settings.voice.page.field.sttLanguageHint': 'BCP-47 コード（例: en, fr）。自動検出の場合は空欄。',
   'settings.voice.page.field.correctTranscript': '聞き間違えた単語を修正',
   'settings.voice.page.field.correctTranscriptInfo': '音声入力を止めると、小さいモデルがテキストを読み、音声認識が聞き間違えた単語を修正します。入力したテキストは小さいモデルのプロバイダーに送られ、1〜2秒後に表示されます。',

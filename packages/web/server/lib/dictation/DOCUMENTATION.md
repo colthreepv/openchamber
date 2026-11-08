@@ -58,7 +58,12 @@ response carries `X-Speech-Model` and `X-Speech-Language`.
     (`normalizeEndpointPath`), so a refused host or a malformed path — any
     remote host in enterprise mode — fails before the user dictates. A
     configured `endpointPath` replaces the fixed resource path on each
-    committed segment.
+    committed segment. Enable **Real-time streaming (OpenCodex)** to send audio
+    to the OpenCodex `/audio/transcriptions/stream` WebSocket instead. It uses
+    the server URL and STT key, ignores model and endpoint path, and inserts
+    text on stop. OpenCodex sessions are limited to five minutes. Configure a
+    connected ChatGPT account on OpenCodex; an API-key-only upstream cannot
+    serve this protocol.
 - `local/` — worker process + client (IPC, idle shutdown TTL), sherpa
   recognizer engine and segment session (one decode per committed segment),
   model catalog and downloader. The native `sherpa-onnx-node` addon is only
@@ -83,12 +88,15 @@ openaiCompatible?: { baseUrl, model, apiKey, endpointPath }, correct? }`. With
 `finish_accepted.timeoutMs` includes its budget (`CORRECTION_TIMEOUT_MS`).
 An empty or
 absent `endpointPath` keeps the OpenAI `/v1/audio/transcriptions` path.
+`openaiCompatible.streaming: true` selects the OpenCodex stream.
 
 ## Segmentation
 
 A dictation is one segment unless it runs long. Past `segmentMinSeconds`
 (15 s) the manager cuts inside the first pause it finds, so cuts land between
 words; `segmentMaxSeconds` (25 s) is a hard cap for speech with no pause in it.
+OpenCodex streaming bypasses this segmentation and commits once on stop;
+its upstream handles utterance segmentation and silence.
 
 Pauses are found inside each ~1 s client chunk, not at chunk boundaries: the
 chunk is scored in 50 ms RMS frames; a frame is quiet when it is close to the
@@ -114,7 +122,7 @@ the user is still speaking, so only the tail is left to transcribe on stop.
 ## Invariants
 
 - Never load `sherpa-onnx-node` in the main server process.
-- Transcription happens on commit only; sessions never emit non-final
+- Buffered transcription happens on commit only; sessions never emit non-final
   transcripts. The `partial` messages a client receives are the concatenation
   of already-committed segments, and exist so a dictation that fails partway
   can be salvaged instead of losing minutes of speech.

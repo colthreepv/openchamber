@@ -18,6 +18,7 @@ export interface DictationStartOptions {
     /** Fix misheard words with the Small Model before the final text. */
     correct?: boolean;
     openaiCompatible?: {
+        streaming?: boolean;
         baseUrl?: string;
         model?: string;
         apiKey?: string;

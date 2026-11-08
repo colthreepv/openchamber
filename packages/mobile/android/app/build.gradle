@@ -7,12 +7,14 @@ def ciKeystorePassword = System.getenv('OPENCHAMBER_ANDROID_KEYSTORE_PASSWORD')
 def ciKeyAlias = System.getenv('OPENCHAMBER_ANDROID_KEY_ALIAS')
 def ciKeyPassword = System.getenv('OPENCHAMBER_ANDROID_KEY_PASSWORD')
 def hasCiSigning = ciKeystorePath && ciKeystorePassword && ciKeyAlias && ciKeyPassword
+def personalBuild = System.getenv('OPENCHAMBER_ANDROID_PERSONAL') == 'true'
 
 android {
     namespace "com.openchamber.app"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.openchamber.app"
+        applicationId personalBuild ? "com.openchamber.app.personal" : "com.openchamber.app"
+        manifestPlaceholders = [appLabel: personalBuild ? "OpenChamber Personal" : "@string/app_name"]
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode ciVersionCode ? ciVersionCode.toInteger() : 1
@@ -69,7 +71,7 @@ apply from: 'capacitor.build.gradle'
 
 try {
     def servicesJSON = file('google-services.json')
-    if (servicesJSON.text) {
+    if (!personalBuild && servicesJSON.text) {
         apply plugin: 'com.google.gms.google-services'
     }
 } catch(Exception e) {

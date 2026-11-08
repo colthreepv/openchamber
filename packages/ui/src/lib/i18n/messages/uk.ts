@@ -1,3 +1,4 @@
+import { assistantsI18n } from './assistants.i18n';
 import type { I18nKey } from './en';
 import { settingsDict } from './uk.settings';
 import { linearIssuePickerI18n } from './linear-issue-picker.i18n';
@@ -64,6 +65,7 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
 import { tooltipsChatI18n } from './tooltips-chat.i18n';
 
 export const dict: Record<I18nKey, string> = {
+  ...assistantsI18n['uk'],
   'quota.family.zen': 'Моделі Zen',
   'quota.value.requests': 'Запити: {count}',
   'quota.value.spent': 'Витрачено {spent}',

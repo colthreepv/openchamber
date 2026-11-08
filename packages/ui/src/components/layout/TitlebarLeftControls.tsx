@@ -11,6 +11,7 @@ import { invokeDesktop } from '@/lib/desktop';
 import { useDesktopWindowControlsLayout } from '@/hooks/useDesktopWindowControlsLayout';
 import { publishTitlebarControlsWidth } from './titlebarControlsWidth';
 import { TooltipLabelWithShortcut } from '@/components/ui/action-toolbar';
+import { useAssistantNavigation } from '@/lib/assistants/assistantsMode';
 
 // Like the icon rail: muted at rest, full strength on hover or while what it
 // controls is on, and no hover fill.
@@ -34,6 +35,7 @@ export const TitlebarLeftControls: React.FC = () => {
   const { t, locale, direction } = useI18n();
   const toggleSidebar = useUIStore((state) => state.toggleSidebar);
   const isSidebarOpen = useUIStore((state) => state.isSidebarOpen);
+  const assistantsMode = useAssistantNavigation();
   const shortcutOverrides = useUIStore((state) => state.shortcutOverrides);
   const clusterRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -157,7 +159,7 @@ export const TitlebarLeftControls: React.FC = () => {
 
         {/* Labelled while the sidebar is open; collapses to an icon with a
             tooltip so the cluster stays compact over the header otherwise. */}
-        {tabsShown ? null : isSidebarOpen ? (
+        {assistantsMode || tabsShown ? null : isSidebarOpen ? (
           <button
             type="button"
             onClick={handleNewSession}

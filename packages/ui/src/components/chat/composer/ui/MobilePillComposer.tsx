@@ -32,6 +32,7 @@ import { ComposerAttachmentControls, type ComposerTrackerPicker } from './Compos
 
 export interface MobilePillComposerProps {
     message: string;
+    placeholder?: string;
     sessionId: string | null;
     newSessionDraftOpen: boolean;
     hasContent: boolean;
@@ -64,6 +65,7 @@ export function MobilePillComposer(props: MobilePillComposerProps) {
     const shortcutOverrides = useUIStore((state) => state.shortcutOverrides);
     const {
         message,
+        placeholder,
         sessionId: currentSessionId,
         newSessionDraftOpen,
         hasContent,
@@ -146,7 +148,7 @@ export function MobilePillComposer(props: MobilePillComposerProps) {
                         {message.trim()
                             ? message
                             : currentSessionId || newSessionDraftOpen
-                                ? t('chat.chatInput.placeholder.chatCompact')
+                                ? placeholder ?? t('chat.chatInput.placeholder.chatCompact')
                                 : t('chat.chatInput.placeholder.selectSession')}
                     </span>
                 </button>

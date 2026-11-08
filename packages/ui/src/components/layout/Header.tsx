@@ -73,6 +73,7 @@ import { titlebarControlsWidthReaderRef } from './titlebarControlsWidth';
 import { useLayoutAnimationMs } from '@/hooks/useLayoutAnimationMs';
 import { LAYOUT_ANIMATION_EASING } from '@/lib/layoutAnimation';
 import { findWorktreeHoldingDirectory } from '@/lib/worktrees/worktreePaths';
+import { AssistantHeaderBadge, AssistantHeaderLabel } from '@/components/assistants/AssistantHeaderParts';
 
 // Like the icon rail: muted at rest, full strength on hover, while its menu is
 // open or while what it controls is on, and no hover fill.
@@ -1082,6 +1083,7 @@ export const Header: React.FC = () => {
               <TooltipContent side="bottom"><TooltipLabelWithShortcut label={t('sessions.switcher.openAria')} shortcut={formatShortcutForDisplay(getEffectiveShortcutCombo('open_session_list', shortcutOverrides), '')} /></TooltipContent>
               </Tooltip>
             ) : null}
+            {isNewSessionDraftOpen ? null : <AssistantHeaderBadge sessionId={currentSessionId} size={24} />}
             <div className="flex min-w-0 flex-col justify-center px-1">
               {isRenamingHeaderSession ? (
                 <form
@@ -1120,9 +1122,15 @@ export const Header: React.FC = () => {
                   </button>
                 </form>
               ) : isNewSessionDraftOpen ? null : (
-                <span dir="auto" className="oc-ui-start-align truncate typography-ui-label text-[0.875rem] font-normal leading-tight text-foreground max-w-full">
-                  {currentSessionTitle}
-                </span>
+                <AssistantHeaderLabel
+                  sessionId={currentSessionId}
+                  title={currentSessionTitle}
+                  fallback={(
+                    <span dir="auto" className="oc-ui-start-align truncate typography-ui-label text-[0.875rem] font-normal leading-tight text-foreground max-w-full">
+                      {currentSessionTitle}
+                    </span>
+                  )}
+                />
               )}
               {showHeaderMetaRow ? (
                 // A draft has no title of its own, so its project and branch

@@ -2567,6 +2567,8 @@ export const settingsDict = {
   'settings.voice.page.field.correctTranscriptUnavailable': 'Mały model jest niedostępny, więc tekst jest wstawiany tak, jak został usłyszany.',
   'settings.voice.page.field.correctTranscriptModelLink': 'Ustawienia małego modelu',
   'settings.voice.page.field.sttServerUrlHint': 'Bazowy URL serwera zgodnego z Whisper',
+  "settings.voice.page.field.sttStreaming": "Strumieniowanie na żywo (OpenCodex)",
+  "settings.voice.page.field.sttStreamingHint": "Używa adresu serwera i klucza API. Model i ścieżka są ignorowane. Sesje trwają najwyżej pięć minut.",
   'settings.voice.page.field.summarizationThreshold': 'Próg podsumowania',
   'settings.voice.page.field.summarizeBeforePlayback': 'Podsumuj przed odtworzeniem',
   'settings.voice.page.field.summarizeBeforePlaybackAria': 'Podsumuj przed odtworzeniem',

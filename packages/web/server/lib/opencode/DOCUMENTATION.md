@@ -1472,6 +1472,12 @@ under a running child.
   harmless. The card's delivery state (`guests/opencode-plugin.js`) tells the
   user, and the same button is the way in.
 
+### Assistant session prompt
+
+Assistant identity uses a separate managed context plugin under
+`../assistants/`. Its `DOCUMENTATION.md` defines canonical selection, feature
+gating and removal of directory-level assistant prompts.
+
 ### Session title prompt
 
 OpenCode names a new session with its hidden `title` agent. Its built-in prompt

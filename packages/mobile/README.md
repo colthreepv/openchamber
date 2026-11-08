@@ -129,4 +129,11 @@ See Cloudflare's [service-token documentation](https://developers.cloudflare.com
 
 ## Generated Assets
 
+Personal Android releases set `OPENCHAMBER_ANDROID_PERSONAL=true`. They use
+`com.openchamber.app.personal` and the launcher name `OpenChamber Personal`,
+so they install beside the official app. They use a dedicated release key.
+The official Firebase configuration does not cover this application ID, so
+personal builds omit it and have no background push notifications. Foreground
+server connections remain available. See the root `personal.md` for releases.
+
 Launcher icons (Android adaptive, legacy, round and themed layers, `assets/icon-*.png`), the Android notification icon and the iOS Control Center symbol are written by `bun run brand:generate` from the workspace root (`scripts/brand`). The iOS app icon is the desktop's `AppIcon.icon`. Launch splash images are still Capacitor's placeholders.

@@ -2252,6 +2252,8 @@ export const settingsDict = {
   'settings.voice.page.field.selectLanguagePlaceholder': '언어 선택',
   'settings.voice.page.field.sttBrowserSupportError': '이 브라우저에서는 MediaRecorder 또는 AudioContext를 사용할 수 없습니다. Server STT가 작동하지 않을 수 있습니다.',
   'settings.voice.page.field.sttServerUrlHint': 'Whisper 호환 서버의 base URL',
+  "settings.voice.page.field.sttStreaming": "실시간 스트리밍 (OpenCodex)",
+  "settings.voice.page.field.sttStreamingHint": "서버 URL과 API 키를 사용하며 모델과 엔드포인트 경로는 무시합니다. 세션은 최대 5분입니다.",
   'settings.voice.page.field.sttLanguageHint': 'BCP-47 코드(예: en, fr). 자동 감지하려면 비워 두세요.',
   'settings.voice.page.field.correctTranscript': '잘못 들은 단어 고치기',
   'settings.voice.page.field.correctTranscriptInfo': '받아쓰기를 멈추면 작은 모델이 텍스트를 읽고 음성 인식이 잘못 들은 단어를 고칩니다. 받아쓴 텍스트는 작은 모델의 제공자에게 전송되며 1~2초 뒤에 나타납니다.',

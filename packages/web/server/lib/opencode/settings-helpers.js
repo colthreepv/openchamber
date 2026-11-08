@@ -1284,6 +1284,8 @@ export const createSettingsHelpers = (dependencies) => {
         result.sttProvider = 'local';
       }
     }
+    const sttStreaming = z.boolean().safeParse(candidate.sttStreaming);
+    if (sttStreaming.success) result.sttStreaming = sttStreaming.data;
     if (typeof candidate.sttServerUrl === 'string') {
       const trimmed = candidate.sttServerUrl.trim();
       if (trimmed.length <= STT_SERVER_URL_MAX_LENGTH) {

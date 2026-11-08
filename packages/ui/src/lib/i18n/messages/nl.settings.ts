@@ -2275,6 +2275,8 @@ export const settingsDict = {
   'settings.voice.page.field.selectLanguagePlaceholder': 'Taal selecteren',
   'settings.voice.page.field.sttBrowserSupportError': 'MediaRecorder of AudioContext is niet beschikbaar in deze browser. STT op de server werkt mogelijk niet.',
   'settings.voice.page.field.sttServerUrlHint': 'Basis-URL van de Whisper-compatibele server',
+  "settings.voice.page.field.sttStreaming": "Realtime streaming (OpenCodex)",
+  "settings.voice.page.field.sttStreamingHint": "Gebruikt de server-URL en API-sleutel. Model en eindpuntpad worden genegeerd. Sessies duren maximaal vijf minuten.",
   'settings.voice.page.field.sttLanguageHint': 'BCP-47-code (bijvoorbeeld en, fr). Laat leeg voor automatische detectie.',
   'settings.voice.page.field.correctTranscript': 'Verkeerd verstane woorden verbeteren',
   'settings.voice.page.field.correctTranscriptInfo': 'Als u stopt met dicteren, leest het kleine model de tekst en verbetert het woorden die de spraakherkenning verkeerd verstond. De gedicteerde tekst gaat naar de aanbieder van het kleine model en verschijnt een à twee seconden later.',

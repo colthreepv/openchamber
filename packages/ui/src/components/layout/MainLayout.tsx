@@ -17,6 +17,12 @@ import { useGuestPages } from '@/hooks/useGuestSurfaces';
 import { subscribeRuntimeEndpointChanged } from '@/lib/runtime-switch';
 import { ErrorBoundary } from '../ui/ErrorBoundary';
 import { SessionSidebar } from '@/components/session/SessionSidebar';
+import { AssistantSidebar } from '@/components/assistants/AssistantSidebar';
+import { CreateAssistantSurface } from '@/components/assistants/CreateAssistantSurface';
+import { useAssistantNavigation } from '@/lib/assistants/assistantsMode';
+import { Button } from '@/components/ui/button';
+import { Icon } from '@/components/icon/Icon';
+import { useI18n } from '@/lib/i18n';
 import { SessionDialogs } from '@/components/session/SessionDialogs';
 import { SpaceActionsSheet, SpaceDeleteDialog } from '@/components/session/spaces/SpaceActions';
 import { DiffWorkerProvider } from '@/contexts/DiffWorkerProvider';
@@ -84,8 +90,12 @@ const OnDemand: React.FC<{
  */
 const LeftSidebar = React.memo<{ isMobile: boolean }>(({ isMobile }) => {
     const isSidebarOpen = useUIStore((state) => state.isSidebarOpen);
+    const assistantsMode = useAssistantNavigation();
+    const [createAssistantOpen, setCreateAssistantOpen] = React.useState(false);
+    const { t } = useI18n();
     const peek = useSidebarPeek({ enabled: !isSidebarOpen && !isMobile, layoutAnimationMs: useLayoutAnimationMs() });
     return (
+        <>
         <Sidebar
             isOpen={isSidebarOpen}
             isMobile={isMobile}
@@ -93,8 +103,17 @@ const LeftSidebar = React.memo<{ isMobile: boolean }>(({ isMobile }) => {
             topBar={<SidebarTopBar />}
             peek={peek}
         >
-            <SessionSidebar isVisible={isSidebarOpen || peek.state !== false} />
+            {assistantsMode ? (
+                <div className="flex h-full min-h-0 flex-col"><AssistantSidebar
+                    variant="desktop"
+                    active={isSidebarOpen || peek.state !== false}
+                    onCreateAssistant={() => setCreateAssistantOpen(true)}
+                    headerActions={<Button type="button" variant="chip" size="sm" aria-label={t('mobile.menu.settings')} title={t('mobile.menu.settings')} onClick={() => useUIStore.getState().setSettingsDialogOpen(true)}><Icon name="settings-3" className="size-4" /></Button>}
+                /></div>
+            ) : <SessionSidebar isVisible={isSidebarOpen || peek.state !== false} />}
         </Sidebar>
+        <CreateAssistantSurface open={assistantsMode && createAssistantOpen} onClose={() => setCreateAssistantOpen(false)} variant="desktop" />
+        </>
     );
 });
 LeftSidebar.displayName = 'LeftSidebar';
